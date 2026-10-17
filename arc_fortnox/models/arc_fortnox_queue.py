@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tools.translate import _
 
 from .fortnox_client import FortnoxError
@@ -103,14 +103,57 @@ class ArcFortnoxQueue(models.Model):
             )
         return entries
 
-    def action_cancel(self):
-        """Cancel pending entries. Cancel is immediate, on purpose."""
-        pending = self.filtered(lambda entry: entry.state == "pending")
-        if len(pending) != len(self):
-            raise UserError(
-                _("Only pending queue entries can be cancelled.")
+    def _arc_fortnox_check_invoicer(self):
+        if not (
+            self.env.su
+            or self.env.user.has_group("arc_fortnox.group_invoicer")
+            or self.env.user.has_group("base.group_system")
+        ):
+            raise AccessError(
+                _("Only Fortnox invoicers may change the Fortnox invoice queue.")
             )
-        pending.write({"state": "cancelled"})
+
+    def action_cancel(self):
+        """Cancel pending or failed entries. Cancel is immediate, on purpose.
+
+        Invoicers read the queue but cannot write to it; state changes go
+        through this action and action_retry only.
+        """
+        self._arc_fortnox_check_invoicer()
+        cancellable = self.filtered(lambda entry: entry.state in ("pending", "error"))
+        if len(cancellable) != len(self):
+            raise UserError(
+                _("Only pending or failed queue entries can be cancelled.")
+            )
+        cancellable.sudo().write({"state": "cancelled"})
+        for entry in cancellable:
+            entry.sale_order_id.sudo().message_post(
+                body=_("Fortnox queue entry cancelled by %s.", self.env.user.name)
+            )
+        return True
+
+    def action_retry(self):
+        """Send failed entries again, with a fresh attempt count.
+
+        Safe by construction: every attempt searches Fortnox for a draft
+        with the order's reference before it posts.
+        """
+        self._arc_fortnox_check_invoicer()
+        failed = self.filtered(lambda entry: entry.state == "error")
+        if len(failed) != len(self):
+            raise UserError(_("Only failed queue entries can be retried."))
+        failed.sudo().write(
+            {
+                "state": "pending",
+                "attempts": 0,
+                "next_attempt": fields.Datetime.now(),
+            }
+        )
+        for entry in failed:
+            entry.sale_order_id.sudo().message_post(
+                body=_("Fortnox queue entry retried by %s.", self.env.user.name)
+            )
+        return True
 
     # -------------------------------------------------------------
     # Processing

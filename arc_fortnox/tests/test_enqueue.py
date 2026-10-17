@@ -141,3 +141,75 @@ class TestQueueDisplay(ArcFortnoxF1Common):
         )
         order.invalidate_recordset(["arc_fortnox_active_queue_count"])
         self.assertEqual(order.arc_fortnox_active_queue_count, 1)
+
+
+class TestQueueActions(ArcFortnoxF1Common):
+    def setUp(self):
+        super().setUp()
+        self.invoicer = self._create_invoicer_user()
+        self.plain = self._create_plain_user()
+        self.queue = self.env["arc.fortnox.queue"]
+
+    def test_retry_failed_entry(self):
+        # Audit D-5: a failed entry has a way out.
+        order = self._create_confirmed_order()
+        entry = self.queue.create(
+            {"company_id": self.company.id, "sale_order_id": order.id}
+        )
+        entry.write({"state": "error", "attempts": 5})
+        entry.with_user(self.invoicer).action_retry()
+        self.assertEqual(entry.state, "pending")
+        self.assertEqual(entry.attempts, 0)
+
+    def test_cancel_failed_entry(self):
+        order = self._create_confirmed_order()
+        entry = self.queue.create(
+            {"company_id": self.company.id, "sale_order_id": order.id}
+        )
+        entry.write({"state": "error"})
+        entry.with_user(self.invoicer).action_cancel()
+        self.assertEqual(entry.state, "cancelled")
+
+    def test_invoicer_cannot_write_or_create_queue_entries(self):
+        # Audit P10 and D-6: state changes only through the actions.
+        order = self._create_confirmed_order()
+        order.with_user(self.invoicer).action_arc_fortnox_enqueue()
+        entry = self.queue.search([("sale_order_id", "=", order.id)])
+        with self.assertRaises(AccessError):
+            entry.with_user(self.invoicer).write(
+                {"state": "done", "fortnox_invoice_number": "999"}
+            )
+        with self.assertRaises(AccessError):
+            self.queue.with_user(self.invoicer).create(
+                {"company_id": self.company.id, "sale_order_id": order.id}
+            )
+        with self.assertRaises(AccessError):
+            entry.with_user(self.invoicer).unlink()
+
+    def test_plain_user_cannot_read_the_queue(self):
+        plain = self.plain
+        order = self._create_confirmed_order()
+        order.with_user(self.invoicer).action_arc_fortnox_enqueue()
+        with self.assertRaises(AccessError):
+            self.queue.with_user(plain).search([]).read(["state"])
+
+    def test_plain_user_cannot_retry(self):
+        plain = self.plain
+        order = self._create_confirmed_order()
+        entry = self.queue.create(
+            {"company_id": self.company.id, "sale_order_id": order.id}
+        )
+        entry.write({"state": "error"})
+        with self.assertRaises(AccessError):
+            entry.with_user(plain).action_retry()
+
+    def test_invoicer_cannot_change_the_vat_mapping(self):
+        position = self.env["account.fiscal.position"].create(
+            {"name": "Mapping ACL", "company_id": self.company.id}
+        )
+        mapping = self.env["arc.fortnox.vat.mapping"].create(
+            {"company_id": self.company.id, "fiscal_position_id": position.id, "vat_type": "SEVAT"}
+        )
+        mapping.with_user(self.invoicer).read(["vat_type"])
+        with self.assertRaises(AccessError):
+            mapping.with_user(self.invoicer).write({"vat_type": "EXPORT"})

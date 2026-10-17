@@ -4,7 +4,7 @@
         <field name="name">arc.fortnox.queue.tree</field>
         <field name="model">arc.fortnox.queue</field>
         <field name="arch" type="xml">
-            <list decoration-danger="state == 'error'" decoration-muted="state in ('cancelled', 'done')">
+            <list create="0" edit="0" delete="0" decoration-danger="state == 'error'" decoration-muted="state in ('cancelled', 'done')">
                 <field name="sale_order_id"/>
                 <field name="state"/>
                 <field name="attempts"/>
@@ -19,17 +19,19 @@
         <field name="name">arc.fortnox.queue.form</field>
         <field name="model">arc.fortnox.queue</field>
         <field name="arch" type="xml">
-            <form>
+            <form create="0" edit="0" delete="0">
                 <header>
-                    <button name="action_cancel" string="Cancel" type="object" class="oe_highlight"
-                            invisible="state != 'pending'"/>
+                    <button name="action_retry" string="Retry" type="object" class="oe_highlight"
+                            invisible="state != 'error'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state not in ('pending', 'error')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,sending,done"/>
                 </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="sale_order_id"/>
                             <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="state"/>
                             <field name="attempts"/>
                             <field name="next_attempt"/>
                         </group>
