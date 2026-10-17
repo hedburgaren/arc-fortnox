@@ -651,6 +651,15 @@ msgstr "Fortnoxfaktura %(number)s har referensen %(ref)s men hör till kund %(ot
 #. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid ""
+"Fortnox invoice %(number)s carries the reference %(ref)s but shows no "
+"customer number, so it cannot be checked against %(expected)s. Check the "
+"invoice in Fortnox, then retry."
+msgstr "Fortnoxfaktura %(number)s har referensen %(ref)s men saknar kundnummer, så den kan inte kontrolleras mot %(expected)s. Kontrollera fakturan i Fortnox och försök igen."
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
 "Fortnox invoice %s still exists and is not cancelled. Delete or cancel it in"
 " Fortnox first; Odoo never writes to an existing Fortnox document."
 msgstr "Fortnox-faktura %s finns kvar och är inte makulerad. Radera eller makulera den i Fortnox först; Odoo skriver aldrig till ett befintligt dokument i Fortnox."

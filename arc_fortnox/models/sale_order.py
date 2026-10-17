@@ -150,7 +150,11 @@ class SaleOrder(models.Model):
             if not number:
                 continue
             invoice = listed
-            if "ExternalInvoiceReference1" not in invoice or "Cancelled" not in invoice:
+            if (
+                "ExternalInvoiceReference1" not in invoice
+                or "Cancelled" not in invoice
+                or (expected and "CustomerNumber" not in invoice)
+            ):
                 detail = client.get(f"invoices/{quote(number, safe='')}")
                 invoice = (detail or {}).get("Invoice") or {}
             if invoice.get("Cancelled"):
@@ -158,7 +162,22 @@ class SaleOrder(models.Model):
             if (invoice.get("ExternalInvoiceReference1") or "") != self.name:
                 continue
             customer = str(invoice.get("CustomerNumber") or "")
-            if expected and customer and customer != expected:
+            if expected and not customer:
+                # Fails closed: an invoice whose customer cannot be read is
+                # never adopted on the order name alone.
+                raise FortnoxError(
+                    _(
+                        "Fortnox invoice %(number)s carries the reference %(ref)s "
+                        "but shows no customer number, so it cannot be checked "
+                        "against %(expected)s. Check the invoice in Fortnox, then "
+                        "retry.",
+                        number=number,
+                        ref=self.name,
+                        expected=expected,
+                    ),
+                    code="invoice_reference_customer_unknown",
+                )
+            if expected and customer != expected:
                 raise FortnoxError(
                     _(
                         "Fortnox invoice %(number)s carries the reference %(ref)s "
