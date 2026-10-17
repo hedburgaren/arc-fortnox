@@ -600,6 +600,7 @@ class SaleOrder(models.Model):
                 raise
             customer = found.get("Customer") or {}
             self._arc_fortnox_check_customer_identity(customer, partner)
+            self._arc_fortnox_check_customer_active(customer)
             self._arc_fortnox_check_customer_mismatch(customer)
             return number
 
@@ -615,7 +616,12 @@ class SaleOrder(models.Model):
                 ),
                 code="customer_unlinked",
             )
-        customers = self._arc_fortnox_search_customers(client, org_number)
+        found = self._arc_fortnox_search_customers(client, org_number)
+        customers = [customer for customer in found if customer.get("Active") is not False]
+        if found and not customers:
+            # Only inactive customers carry the number: creating one more
+            # would duplicate it, so the push stops.
+            self._arc_fortnox_check_customer_active(found[0])
         if len(customers) > 1:
             raise FortnoxError(
                 _(
@@ -646,6 +652,19 @@ class SaleOrder(models.Model):
             )
         partner.write({"arc_fortnox_customer_number": number})
         return number
+
+    def _arc_fortnox_check_customer_active(self, customer):
+        """Stop on a customer that is inactive in Fortnox."""
+        if customer.get("Active") is False:
+            raise FortnoxError(
+                _(
+                    "Fortnox customer %s is inactive. Activate it in Fortnox, or "
+                    "set another Fortnox customer number on the partner, then "
+                    "retry.",
+                    customer.get("CustomerNumber"),
+                ),
+                code="customer_inactive",
+            )
 
     def _arc_fortnox_search_customers(self, client, org_number):
         """Fortnox customers whose organisation number equals org_number.

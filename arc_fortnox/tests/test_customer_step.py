@@ -200,6 +200,45 @@ class TestCustomerStep(ArcFortnoxF1Common):
         self.assertEqual(context.exception.error_code, "customer_orgnr_ambiguous")
         self.assertNotIn("POST", [call[0] for call in self.fake_client.calls])
 
+    def test_inactive_hit_is_skipped_for_the_active_one(self):
+        self.partner.write({"company_registry": "5561234567"})
+        self.fake_client._get_results.extend(
+            [
+                {
+                    "Customers": [
+                        self.fake_customer(CustomerNumber="41", OrganisationNumber="5561234567", Active=False),
+                        self.fake_customer(CustomerNumber="42", OrganisationNumber="5561234567", Active=True),
+                    ]
+                },
+                {"Customers": []},
+            ]
+        )
+        self.assertEqual(self.order._arc_fortnox_resolve_customer(self.fake_client), "42")
+
+    def test_only_inactive_hits_stop_without_creating(self):
+        self.partner.write({"company_registry": "5561234567"})
+        self.fake_client._get_results.extend(
+            [
+                {
+                    "Customers": [
+                        self.fake_customer(CustomerNumber="41", OrganisationNumber="5561234567", Active=False)
+                    ]
+                },
+                {"Customers": []},
+            ]
+        )
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_resolve_customer(self.fake_client)
+        self.assertEqual(context.exception.error_code, "customer_inactive")
+        self.assertNotIn("POST", [call[0] for call in self.fake_client.calls])
+
+    def test_linked_inactive_customer_stops(self):
+        self.partner.write({"arc_fortnox_customer_number": "7"})
+        self.fake_client._get_results.append({"Customer": self.fake_customer(Active=False)})
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_resolve_customer(self.fake_client)
+        self.assertEqual(context.exception.error_code, "customer_inactive")
+
     def test_orgnr_in_both_forms_stops(self):
         # Verifier D-7: one customer stored plain, another with the dash.
         self.partner.write({"company_registry": "5561234567"})

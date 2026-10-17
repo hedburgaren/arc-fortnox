@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.6.0.
+public repository. Version 18.0.1.6.1.
 
 ## Key models
 
@@ -106,7 +106,9 @@ else from a Swedish VAT number (`SE` and trailing `01` dropped; the
 twelve digit forms with `16`, `19` or `20` lose the prefix); search
 `customers?organisationnumber=` with and without dash, always both,
 compare after normalisation, exactly one is adopted, more stop
-(`customer_orgnr_ambiguous`). Neither a customer number nor an
+(`customer_orgnr_ambiguous`); hits with `Active` false are left out,
+and only inactive hits stop (`customer_inactive`) rather than create a
+duplicate, as does a linked customer that is inactive. Neither a customer number nor an
 organisation number stops before any request (`customer_unlinked`): a
 create could duplicate a customer already in Fortnox. An organisation
 number Fortnox does not know: create from
@@ -166,4 +168,6 @@ trigger to manual.
 - Open for the sandbox run: the rate limit default (25 calls / 5 s), the
   invoice list filter `externalinvoicereference1` and the fields it
   returns, the organisation number format Fortnox stores and searches,
-  and that a draft without `TermsOfPayment` gets the customer's terms.
+  that a draft without `TermsOfPayment` gets the customer's terms, and
+  whether the customer list returns `Active` (without it every hit
+  counts as active).
