@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.1.1.
+public repository. Version 18.0.1.2.0.
 
 ## Key models
 
@@ -82,7 +82,10 @@ else from a Swedish VAT number (`SE` and trailing `01` dropped; the
 twelve digit forms with `16`, `19` or `20` lose the prefix); search
 `customers?organisationnumber=` with and without dash, always both,
 compare after normalisation, exactly one is adopted, more stop
-(`customer_orgnr_ambiguous`). Nothing: create from
+(`customer_orgnr_ambiguous`). Neither a customer number nor an
+organisation number stops before any request (`customer_unlinked`): a
+create could duplicate a customer already in Fortnox. An organisation
+number Fortnox does not know: create from
 `_arc_fortnox_customer_payload` (Type COMPANY or PRIVATE, organisation
 number and VAT number in their own fields, invoice address and email).
 

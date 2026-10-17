@@ -304,18 +304,14 @@ class TestCustomerStep(ArcFortnoxF1Common):
             context.exception.error_code, "customer_vat_type_mismatch"
         )
 
-    def test_no_partner_data_creates_customer_with_minimum(self):
-        self.fake_client._get_results.append({"Customers": []})
-        self.fake_client._post_results.append(
-            {"Customer": {"CustomerNumber": "45"}}
-        )
-        number = self.order._arc_fortnox_resolve_customer(self.fake_client)
-        self.assertEqual(number, "45")
-        self.assertFalse(
-            any(call[0] == "GET" for call in self.fake_client.calls),
-            "Without a reference and an organisation number there is "
-            "nothing to search for.",
-        )
+    def test_partner_without_number_or_orgnr_stops(self):
+        # Neither a Fortnox number nor an organisation number: a create
+        # could duplicate a customer already in Fortnox, so nothing is sent.
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_resolve_customer(self.fake_client)
+        self.assertEqual(context.exception.error_code, "customer_unlinked")
+        self.assertEqual(self.fake_client.calls, [])
+        self.assertFalse(self.partner.arc_fortnox_customer_number)
 
     def test_payload_uses_invoice_address_and_type(self):
         # Audit D-9.

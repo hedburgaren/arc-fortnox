@@ -387,7 +387,9 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
     def test_created_customer_survives_a_failed_draft_step(self):
         # Audit D-10: the customer exists in Fortnox now; a retry must find
         # its number on the partner instead of creating it again.
-        self.partner.write({"arc_fortnox_customer_number": False})
+        self.partner.write(
+            {"arc_fortnox_customer_number": False, "company_registry": "5561234567"}
+        )
         self.fake_client._get_results.clear()
         self.fake_client._post_results.extend(
             [

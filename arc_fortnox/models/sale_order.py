@@ -499,8 +499,13 @@ class SaleOrder(models.Model):
         2. No number: search Fortnox by organisation number. Exactly one
            customer with that number is adopted onto the partner without
            touching Fortnox; more than one stops the push.
-        3. Still nothing: the customer is created once from the payload
-           hook and the returned number is stored on the partner.
+        3. No number and no organisation number: the push stops. Nothing
+           can show that the customer is not already in Fortnox, so a
+           create would risk a duplicate; someone links the customer
+           number on the partner, or adds the organisation number.
+        4. An organisation number that Fortnox does not know: the customer
+           is created once from the payload hook and the returned number
+           is stored on the partner.
 
         Existing customers are never updated in v1.
         """
@@ -530,25 +535,35 @@ class SaleOrder(models.Model):
             return number
 
         org_number = self._arc_fortnox_partner_org_number(partner)
-        if org_number:
-            customers = self._arc_fortnox_search_customers(client, org_number)
-            if len(customers) > 1:
-                raise FortnoxError(
-                    _(
-                        "Fortnox has %s customers with the organisation number "
-                        "of this partner. Set the right Fortnox customer number "
-                        "on the partner, then retry.",
-                        len(customers),
-                    ),
-                    code="customer_orgnr_ambiguous",
-                )
-            if customers:
-                customer = customers[0]
-                number = str(customer.get("CustomerNumber") or "")
-                if number:
-                    partner.write({"arc_fortnox_customer_number": number})
-                    self._arc_fortnox_check_customer_mismatch(customer)
-                    return number
+        if not org_number:
+            raise FortnoxError(
+                _(
+                    "The customer has neither a Fortnox customer number nor "
+                    "an organisation number, so it cannot be told apart "
+                    "from one already in Fortnox. Set the Fortnox customer "
+                    "number or the organisation number on the partner, "
+                    "then retry."
+                ),
+                code="customer_unlinked",
+            )
+        customers = self._arc_fortnox_search_customers(client, org_number)
+        if len(customers) > 1:
+            raise FortnoxError(
+                _(
+                    "Fortnox has %s customers with the organisation number "
+                    "of this partner. Set the right Fortnox customer number "
+                    "on the partner, then retry.",
+                    len(customers),
+                ),
+                code="customer_orgnr_ambiguous",
+            )
+        if customers:
+            customer = customers[0]
+            number = str(customer.get("CustomerNumber") or "")
+            if number:
+                partner.write({"arc_fortnox_customer_number": number})
+                self._arc_fortnox_check_customer_mismatch(customer)
+                return number
 
         created = client.post(
             "customers", {"Customer": self._arc_fortnox_customer_payload()}
