@@ -1,0 +1,290 @@
+from unittest.mock import patch
+
+from odoo.addons.arc_fortnox.models.fortnox_client import FortnoxError
+from odoo.exceptions import UserError
+
+from .common import ArcFortnoxF1Common
+from .test_queue_processing import FakeClient
+
+
+class TestInvoiceDraft(ArcFortnoxF1Common):
+    def setUp(self):
+        super().setUp()
+        self.fake_client = FakeClient()
+        patcher = patch.object(
+            type(self.company),
+            "arc_fortnox_client",
+            lambda company: self.fake_client,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.term = self.env["account.payment.term"].create(
+            {"name": "15 days", "arc_fortnox_code": "15"}
+        )
+        self.fiscal_position = self.env["account.fiscal.position"].create(
+            {"name": "Domestic", "company_id": self.company.id}
+        )
+        self.mapping = self.env["arc.fortnox.vat.mapping"].create(
+            {
+                "company_id": self.company.id,
+                "fiscal_position_id": self.fiscal_position.id,
+                "vat_type": "SEVAT",
+                "revenue_account": "3011",
+            }
+        )
+        self.vat25 = self.env["account.tax"].create(
+            {
+                "name": "VAT 25%",
+                "amount": 25.0,
+                "amount_type": "percent",
+                "type_tax_use": "sale",
+            }
+        )
+        self.partner = self.env["res.partner"].create(
+            {"name": "Draft Builder Partner", "ref": "7"}
+        )
+        self.product = self.env["product.product"].create(
+            {"name": "Draft Builder Product", "list_price": 100.0}
+        )
+        self.order = self.env["sale.order"].create(
+            {
+                "partner_id": self.partner.id,
+                "payment_term_id": self.term.id,
+                "fiscal_position_id": self.fiscal_position.id,
+                "order_line": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": 1.0,
+                            "price_unit": 100.0,
+                            "discount": 0.0,
+                            "tax_id": [(6, 0, [self.vat25.id])],
+                        },
+                    )
+                ],
+            }
+        )
+        self.order.action_confirm()
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        self.invoicer = self._create_invoicer_user()
+        self.fake_client._get_results.append(
+            {
+                "Customer": {
+                    "CustomerNumber": "7",
+                    "VATType": "SEVAT",
+                    "Currency": self.order.currency_id.name,
+                    "TermsOfPayment": "15",
+                }
+            }
+        )
+
+    def _invoice_post_result(self, number="12"):
+        self.fake_client._post_results.append(
+            {"Invoice": {"DocumentNumber": number}}
+        )
+
+    def _post_payload(self):
+        for call in self.fake_client.calls:
+            if call[0] == "POST":
+                return call[2]["Invoice"]
+        return None
+
+    def test_push_posts_draft_and_returns_number(self):
+        self._invoice_post_result("12")
+        number = self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(number, "12")
+        payload = self._post_payload()
+        self.assertEqual(payload["CustomerNumber"], "7")
+        self.assertEqual(payload["YourOrderNumber"], self.order.name)
+        self.assertEqual(
+            payload["ExternalInvoiceReference1"], self.order.name
+        )
+        self.assertEqual(payload["Currency"], self.order.currency_id.name)
+        self.assertEqual(payload["TermsOfPayment"], "15")
+        self.assertFalse(
+            {"Booked", "Sent", "ExternalPrint"} & set(payload.keys()),
+            "The payload must be a draft only.",
+        )
+
+    def test_row_without_article_by_default(self):
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        row = self._post_payload()["InvoiceRows"][0]
+        self.assertNotIn("ArticleNumber", row)
+        self.assertEqual(row["DeliveredQuantity"], 1.0)
+        self.assertEqual(row["Price"], 100.0)
+        self.assertEqual(row["AccountNumber"], "3011")
+        self.assertEqual(row["VAT"], 25.0)
+
+    def test_article_number_when_setting_enabled(self):
+        self.company.write({"arc_fortnox_send_article_numbers": True})
+        self.product.write({"arc_fortnox_article": "A-1"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        row = self._post_payload()["InvoiceRows"][0]
+        self.assertEqual(row["ArticleNumber"], "A-1")
+
+    def test_product_account_beats_mapping_default(self):
+        self.product.write({"arc_fortnox_account": "3050"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        row = self._post_payload()["InvoiceRows"][0]
+        self.assertEqual(row["AccountNumber"], "3050")
+
+    def test_decimal_quantity_priced_from_full_sheet(self):
+        self.order.order_line[0].write(
+            {"product_uom_qty": 0.3, "price_unit": 1000.0}
+        )
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        row = self._post_payload()["InvoiceRows"][0]
+        self.assertEqual(row["DeliveredQuantity"], 0.3)
+        self.assertEqual(row["Price"], 1000.0)
+        total = row["Price"] * row["DeliveredQuantity"]
+        self.assertAlmostEqual(total, self.order.amount_untaxed, places=2)
+
+    def test_discount_travels_as_percentage(self):
+        self.order.order_line[0].write({"discount": 10.0})
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        row = self._post_payload()["InvoiceRows"][0]
+        self.assertEqual(row["Discount"], 10.0)
+        total = row["Price"] * row["DeliveredQuantity"] * 0.9
+        self.assertAlmostEqual(total, self.order.amount_untaxed, places=2)
+
+    def test_section_and_note_rows_become_text_rows(self):
+        self.order.write(
+            {
+                "order_line": [
+                    (
+                        0,
+                        0,
+                        {
+                            "display_type": "line_section",
+                            "name": "Section Header",
+                        },
+                    ),
+                    (
+                        0,
+                        0,
+                        {
+                            "display_type": "line_note",
+                            "name": "A note row",
+                        },
+                    ),
+                ]
+            }
+        )
+        self.order.order_line.filtered(
+            lambda line: not line.display_type
+        ).product_uom.write({"arc_fortnox_unit": "ST"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        rows = self._post_payload()["InvoiceRows"]
+        self.assertEqual(rows[-2]["Description"], "Section Header")
+        self.assertEqual(rows[-2]["Price"], 0)
+        self.assertEqual(rows[-2]["DeliveredQuantity"], 0)
+        self.assertEqual(rows[-1]["Description"], "A note row")
+
+    def test_long_description_continues_on_text_rows(self):
+        self.company.write({"arc_fortnox_max_description_length": 50})
+        long_name = (
+            "Rundstang transparent med mycket lang beskrivning som ska "
+            "fortsatta pa flera rader i Fortnox"
+        )
+        self.order.order_line[0].write({"name": long_name})
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        rows = self._post_payload()["InvoiceRows"]
+        self.assertEqual(rows[0]["Description"], long_name[:50])
+        self.assertEqual(rows[1]["Description"], long_name[50:])
+        self.assertEqual(rows[1]["Price"], 0)
+        self.assertEqual(rows[1]["DeliveredQuantity"], 0)
+        self.assertTrue(rows[1]["Description"])
+
+    def test_multi_tax_row_stops_before_post(self):
+        vat12 = self.env["account.tax"].create(
+            {
+                "name": "VAT 12%",
+                "amount": 12.0,
+                "amount_type": "percent",
+                "type_tax_use": "sale",
+            }
+        )
+        self.order.order_line[0].write(
+            {"tax_id": [(6, 0, [self.vat25.id, vat12.id])]}
+        )
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "line_multiple_taxes")
+        self.assertFalse(
+            any(call[0] == "POST" for call in self.fake_client.calls),
+            "No POST may happen.",
+        )
+
+    def test_account_missing_stops_before_post(self):
+        self.mapping.write({"revenue_account": False})
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": "ST"})
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "account_missing")
+        self.assertFalse(
+            any(call[0] == "POST" for call in self.fake_client.calls),
+            "No POST may happen.",
+        )
+
+    def test_unmapped_unit_stops_before_post(self):
+        self.order.order_line[0].product_uom.write({"arc_fortnox_unit": False})
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "unit_unmapped")
+        # The customer step already ran (one GET), but no invoice POST.
+        self.assertFalse(
+            any(call[0] == "POST" for call in self.fake_client.calls)
+        )
+
+    def test_disconnect_allows_missing_invoice(self):
+        self.order.sudo().write({"arc_fortnox_invoice_number": "9"})
+        self.fake_client._get_results.clear()
+        self.fake_client._get_results.append(
+            FortnoxError("not found", http_status=404)
+        )
+        disconnected = []
+        with patch.object(
+            type(self.order),
+            "_arc_fortnox_invoice_disconnected",
+            lambda self: disconnected.append(self.id),
+        ):
+            self.order.with_user(self.invoicer).action_arc_fortnox_disconnect()
+        self.assertFalse(self.order.arc_fortnox_invoice_number)
+        self.assertEqual(disconnected, [self.order.id])
+
+    def test_disconnect_allows_cancelled_invoice(self):
+        self.order.sudo().write({"arc_fortnox_invoice_number": "9"})
+        self.fake_client._get_results.clear()
+        self.fake_client._get_results.append(
+            {"Invoice": {"DocumentNumber": "9", "Cancelled": True}}
+        )
+        self.order.with_user(self.invoicer).action_arc_fortnox_disconnect()
+        self.assertFalse(self.order.arc_fortnox_invoice_number)
+
+    def test_disconnect_refuses_live_invoice(self):
+        self.order.sudo().write({"arc_fortnox_invoice_number": "9"})
+        self.fake_client._get_results.clear()
+        self.fake_client._get_results.append(
+            {"Invoice": {"DocumentNumber": "9", "Cancelled": False}}
+        )
+        with self.assertRaises(UserError):
+            self.order.with_user(self.invoicer).action_arc_fortnox_disconnect()
+        self.assertEqual(self.order.arc_fortnox_invoice_number, "9")
+
+    def test_disconnect_requires_a_number(self):
+        with self.assertRaises(UserError):
+            self.order.with_user(self.invoicer).action_arc_fortnox_disconnect()

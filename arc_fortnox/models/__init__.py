@@ -1,0 +1,7 @@
+from . import account_payment_term
+from . import arc_fortnox_credential
+from . import arc_fortnox_queue
+from . import arc_fortnox_vat_mapping
+from . import res_company
+from . import res_config_settings
+from . import sale_order

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_arc_fortnox_credential_system,arc.fortnox.credential system,model_arc_fortnox_credential,base.group_system,1,1,1,1
+access_arc_fortnox_queue_invoicer,arc.fortnox.queue invoicer,model_arc_fortnox_queue,group_invoicer,1,1,1,1
+access_arc_fortnox_queue_system,arc.fortnox.queue system,model_arc_fortnox_queue,base.group_system,1,1,1,1
+access_arc_fortnox_vat_mapping_invoicer,arc.fortnox.vat.mapping invoicer,model_arc_fortnox_vat_mapping,group_invoicer,1,1,1,1
+access_arc_fortnox_vat_mapping_system,arc.fortnox.vat.mapping system,model_arc_fortnox_vat_mapping,base.group_system,1,1,1,1

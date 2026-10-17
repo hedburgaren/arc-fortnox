@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_invoicer" model="res.groups">
+        <field name="name">Fortnox Invoicer</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="comment">May queue sales orders for Fortnox invoicing, disconnect drafts and manage the Fortnox invoice queue.</field>
+    </record>
+</odoo>

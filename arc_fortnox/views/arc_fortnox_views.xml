@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_arc_fortnox_queue_tree" model="ir.ui.view">
+        <field name="name">arc.fortnox.queue.tree</field>
+        <field name="model">arc.fortnox.queue</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-muted="state in ('cancelled', 'done')">
+                <field name="sale_order_id"/>
+                <field name="state"/>
+                <field name="attempts"/>
+                <field name="next_attempt"/>
+                <field name="fortnox_invoice_number"/>
+                <field name="error_code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_arc_fortnox_queue_form" model="ir.ui.view">
+        <field name="name">arc.fortnox.queue.form</field>
+        <field name="model">arc.fortnox.queue</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_cancel" string="Cancel" type="object" class="oe_highlight"
+                            invisible="state != 'pending'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sale_order_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="state"/>
+                            <field name="attempts"/>
+                            <field name="next_attempt"/>
+                        </group>
+                        <group>
+                            <field name="fortnox_invoice_number"/>
+                            <field name="error_code"/>
+                            <field name="error_text"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_arc_fortnox_queue_search" model="ir.ui.view">
+        <field name="name">arc.fortnox.queue.search</field>
+        <field name="model">arc.fortnox.queue</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="sale_order_id"/>
+                <field name="fortnox_invoice_number"/>
+                <filter string="Pending" name="state_pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Sending" name="state_sending" domain="[('state', '=', 'sending')]"/>
+                <filter string="Done" name="state_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Error" name="state_error" domain="[('state', '=', 'error')]"/>
+                <filter string="Cancelled" name="state_cancelled" domain="[('state', '=', 'cancelled')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_arc_fortnox_queue" model="ir.actions.act_window">
+        <field name="name">Fortnox Invoice Queue</field>
+        <field name="res_model">arc.fortnox.queue</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_arc_fortnox_vat_mapping_tree" model="ir.ui.view">
+        <field name="name">arc.fortnox.vat.mapping.tree</field>
+        <field name="model">arc.fortnox.vat.mapping</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="fiscal_position_id"/>
+                <field name="vat_type"/>
+                <field name="revenue_account"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_arc_fortnox_vat_mapping" model="ir.actions.act_window">
+        <field name="name">Fortnox VAT Mappings</field>
+        <field name="res_model">arc.fortnox.vat.mapping</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Map fiscal positions to Fortnox VAT types
+            </p>
+            <p>
+                An order whose fiscal position has no mapping is not pushed
+                to Fortnox. The default revenue account is used when a
+                product has no account of its own.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_arc_fortnox_config"
+              name="Fortnox"
+              parent="sale.menu_sale_config"
+              groups="arc_fortnox.group_invoicer"
+              sequence="60"/>
+
+    <menuitem id="menu_arc_fortnox_queue"
+              action="action_arc_fortnox_queue"
+              parent="menu_arc_fortnox_config"
+              sequence="10"/>
+
+    <menuitem id="menu_arc_fortnox_vat_mapping"
+              action="action_arc_fortnox_vat_mapping"
+              parent="menu_arc_fortnox_config"
+              sequence="20"/>
+</odoo>

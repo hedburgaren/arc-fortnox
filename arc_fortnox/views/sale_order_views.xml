@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_arc_fortnox" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.arc_fortnox</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_arc_fortnox_enqueue" string="Queue for Fortnox" type="object" class="oe_highlight" groups="arc_fortnox.group_invoicer"
+                        invisible="state != 'sale' or arc_fortnox_invoice_number or arc_fortnox_active_queue_count > 0"/>
+                <button name="action_arc_fortnox_disconnect" string="Disconnect Fortnox Invoice" type="object" groups="arc_fortnox.group_invoicer"
+                        invisible="not arc_fortnox_invoice_number"/>
+            </xpath>
+            <xpath expr="//group[@name='sale_info']" position="inside">
+                <field name="arc_fortnox_invoice_number" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

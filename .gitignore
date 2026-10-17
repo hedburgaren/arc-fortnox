@@ -1,0 +1,21 @@
+# Odoo / Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environments and secrets
+.env
+.env.*
+*.pem
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Odoo build artifacts
+*.mo
+.odoo/
