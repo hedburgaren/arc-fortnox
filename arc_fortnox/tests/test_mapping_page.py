@@ -178,3 +178,26 @@ class TestMappingPage(ArcFortnoxF1Common):
         rows = self.records.search([("record_type", "=", "customer")])
         self.assertEqual(sorted(rows.mapped("fortnox_number")), ["1001", "1002"])
         self.assertEqual(rows.filtered(lambda r: r.fortnox_number == "1001").suggested_partner_id, self.plast)
+
+    # Verifier findings on task 136, 2026-10-18.
+
+    def test_private_customer_is_suggested_among_persons_and_can_be_linked(self):
+        person = self.env["res.partner"].create({"name": "Anna Andersson", "is_company": False})
+        rows = self._import(
+            "customer_number,name,organisation_number,active,type,invoice_city\n"
+            "2001,Anna Anderson,,1,private,KARLSTAD\n"
+        )
+        self.assertEqual(rows["2001"].suggested_partner_id, person)
+        rows["2001"].with_user(self.invoicer).action_use_suggestion()
+        self.assertEqual(person.arc_fortnox_customer_number, "2001")
+
+    def test_company_customer_is_not_suggested_a_person(self):
+        self.env["res.partner"].create({"name": "Okänd Firma AB", "is_company": False})
+        rows = self._import(CUSTOMER_EXPORT)
+        self.assertFalse(rows["1003"].suggested_partner_id)
+
+    def test_fortnox_fields_cannot_be_edited(self):
+        rows = self._import(CUSTOMER_EXPORT)
+        with self.assertRaises(UserError):
+            rows["1001"].with_user(self.invoicer).write({"name": "Ändrat namn"})
+        self.assertEqual(rows["1001"].name, "Plasttillverkarna Linköping AB")
