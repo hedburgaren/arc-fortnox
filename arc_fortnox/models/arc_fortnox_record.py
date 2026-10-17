@@ -142,6 +142,14 @@ class ArcFortnoxRecord(models.Model):
         linking = {"partner_id", "product_id"} & set(vals)
         if linking:
             self._check_invoicer()
+            partner = self.env["res.partner"].browse(vals.get("partner_id") or [])
+            if partner and partner.parent_id:
+                # A contact person under a company is never a Fortnox
+                # customer of its own; the domain says so in the form, this
+                # says it over RPC too.
+                raise UserError(
+                    _("Link the company or the private person, not a contact person under a company.")
+                )
             before = {record.id: (record.partner_id, record.product_id) for record in self}
         result = super().write(vals)
         if linking:
@@ -306,7 +314,14 @@ class ArcFortnoxRecord(models.Model):
             for record in customers:
                 partner, reason = Partner, ""
                 key = normalise(record.organisation_number)
-                pool = by_name[(record.customer_type or "").upper() != "PRIVATE"]
+                kind = (record.customer_type or "").strip().upper()
+                if kind.startswith("PRIVAT"):
+                    pool = by_name[False]
+                elif kind in ("COMPANY", "FÖRETAG", "FORETAG"):
+                    pool = by_name[True]
+                else:
+                    # Unknown or empty type: both, companies win a tie.
+                    pool = dict(by_name[False], **by_name[True])
                 if key and key in by_orgnr:
                     partner, reason = by_orgnr[key], _("organisation number")
                 else:
@@ -369,6 +384,9 @@ class ArcFortnoxRecord(models.Model):
                 "organisation_number": item.get("OrganisationNumber") or "",
                 "email": item.get("Email") or "",
                 "city": item.get("City") or "",
+                # COMPANY or PRIVATE when the listing carries it; the
+                # suggestion searches both pools when it does not.
+                "customer_type": item.get("Type") or "",
                 "fortnox_active": item.get("Active", True) is not False,
             }
         return {
