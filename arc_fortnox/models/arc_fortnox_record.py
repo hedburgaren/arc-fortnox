@@ -7,7 +7,6 @@ from odoo.exceptions import AccessError, UserError
 from .sale_order import GROUP_INVOICER
 
 RECORD_TYPES = [("customer", "Customer"), ("article", "Article")]
-TRUTH_SOURCES = [("fortnox", "Fortnox"), ("odoo", "Odoo")]
 NAME_SUGGESTION_CUTOFF = 0.85
 FETCH_PAGE_LIMIT = 500
 
@@ -71,7 +70,6 @@ class ArcFortnoxRecord(models.Model):
     )
     state_sequence = fields.Integer(compute="_compute_state", store=True)
     difference = fields.Char(string="Differs", compute="_compute_difference")
-    truth_source = fields.Selection(TRUTH_SOURCES, compute="_compute_difference")
 
     _sql_constraints = [
         (
@@ -96,15 +94,11 @@ class ArcFortnoxRecord(models.Model):
     @api.depends(
         "name", "organisation_number", "partner_id.name", "partner_id.company_registry",
         "product_id.name", "product_id.product_template_attribute_value_ids",
-        "company_id.arc_fortnox_truth_customer",
-        "company_id.arc_fortnox_truth_article",
     )
     def _compute_difference(self):
         for record in self:
-            company = record.company_id.sudo()
             notes = []
             if record.record_type == "customer":
-                record.truth_source = company.arc_fortnox_truth_customer
                 partner = record.partner_id
                 if partner:
                     if normalise_name(partner.name) != normalise_name(record.name):
@@ -114,7 +108,6 @@ class ArcFortnoxRecord(models.Model):
                     if theirs and ours and theirs[-10:] != ours[-10:]:
                         notes.append(_("organisation number"))
             else:
-                record.truth_source = company.arc_fortnox_truth_article
                 product = record.product_id
                 label = product.with_context(display_default_code=False).display_name
                 if product and normalise_name(label) != normalise_name(record.name):
@@ -201,24 +194,6 @@ class ArcFortnoxRecord(models.Model):
 
     def action_unlink_odoo(self):
         self.write({"partner_id": False, "product_id": False})
-        return True
-
-    def action_copy_from_fortnox(self):
-        """Fortnox is right: correct the linked Odoo customer's name and number.
-
-        Only for customers, only when the company treats Fortnox as the
-        source of truth for customers. An organisation number is copied only
-        when it is a Swedish one; Odoo is written, Fortnox never.
-        """
-        self._check_invoicer()
-        for record in self.filtered(lambda r: r.record_type == "customer" and r.partner_id):
-            if record.company_id.sudo().arc_fortnox_truth_customer != "fortnox":
-                raise UserError(_("Odoo is the source of truth for customers in this company."))
-            values = {"name": record.name}
-            if re.fullmatch(r"\d{6}-?\d{4}", record.organisation_number or ""):
-                digits = re.sub(r"[^0-9]", "", record.organisation_number)
-                values["company_registry"] = "%s-%s" % (digits[:6], digits[6:])
-            record.partner_id.sudo().write(values)
         return True
 
     # ------------------------------------------------------------------

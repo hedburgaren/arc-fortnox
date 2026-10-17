@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 20:28+0000\n"
-"PO-Revision-Date: 2026-10-17 20:28+0000\n"
+"POT-Creation-Date: 2026-10-17 20:45+0000\n"
+"PO-Revision-Date: 2026-10-17 20:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -196,11 +196,6 @@ msgid "Contact"
 msgstr "Kontakt"
 
 #. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
-msgid "Correct Odoo from Fortnox"
-msgstr "Rätta Odoo efter Fortnox"
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
@@ -348,9 +343,6 @@ msgid "Fiscal Position"
 msgstr "Skatteposition"
 
 #. module: arc_fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__fortnox
 #: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_config
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "Fortnox"
@@ -715,12 +707,6 @@ msgid "Fortnox returned an unexpected response."
 msgstr "Fortnox gav ett oväntat svar."
 
 #. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_customer
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
-msgid "Fortnox: Customers Are Right In"
-msgstr "Fortnox: kunduppgifter stämmer i"
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
 msgid "Fortnox: Freight Products"
@@ -731,12 +717,6 @@ msgstr "Fortnox: fraktprodukter"
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
 msgid "Fortnox: Payment Terms From"
 msgstr "Fortnox: betalningsvillkor från"
-
-#. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_article
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
-msgid "Fortnox: Products Are Right In"
-msgstr "Fortnox: produktuppgifter stämmer i"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_send_article_numbers
@@ -935,11 +915,6 @@ msgid "Map fiscal positions to Fortnox VAT types"
 msgstr "Mappa skattepositioner till Fortnox momstyper"
 
 #. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
-msgid "Mapping"
-msgstr "Mappning"
-
-#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_throttle_calls
 #: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_calls
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
@@ -1011,13 +986,6 @@ msgid ""
 msgstr "Inte köad automatiskt: %s Köa den med knappen när ordern stämmer."
 
 #. module: arc_fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__odoo
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__odoo
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__odoo
-msgid "Odoo"
-msgstr "Odoo"
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__partner_id
 msgid "Odoo Customer"
 msgstr "Kund i Odoo"
@@ -1026,31 +994,6 @@ msgstr "Kund i Odoo"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__product_id
 msgid "Odoo Product"
 msgstr "Produkt i Odoo"
-
-#. module: arc_fortnox
-#. odoo-python
-#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
-msgid "Odoo is the source of truth for customers in this company."
-msgstr "I det här företaget är det Odoo som har rätt om kunder."
-
-#. module: arc_fortnox
-#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_article
-#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
-msgid ""
-"On the mapping page, where differences between a Fortnox article and its "
-"Odoo product are taken to be correct. Products are never changed from "
-"Fortnox; with Odoo, differences are shown to be fixed in Fortnox by hand."
-msgstr "På mappningssidan: var det som skiljer en Fortnox-artikel från produkten i Odoo räknas som rätt. Produkter ändras aldrig utifrån Fortnox; med Odoo visas skillnaderna så att de kan rättas för hand i Fortnox."
-
-#. module: arc_fortnox
-#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_customer
-#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
-msgid ""
-"On the mapping page, where differences between a Fortnox customer and its "
-"Odoo customer are taken to be correct. Fortnox: the page offers to correct "
-"Odoo. Odoo: differences are shown to be fixed in Fortnox by hand; the module"
-" never writes to Fortnox."
-msgstr "På mappningssidan: var det som skiljer en Fortnox-kund från kunden i Odoo räknas som rätt. Fortnox: sidan erbjuder att rätta Odoo. Odoo: skillnaderna visas så att de kan rättas för hand i Fortnox; modulen skriver aldrig till Fortnox."
 
 #. module: arc_fortnox
 #. odoo-python
@@ -1586,11 +1529,6 @@ msgid "Trigger Mode"
 msgstr "Triggerläge"
 
 #. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__truth_source
-msgid "Truth Source"
-msgstr "Rätt källa"
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__record_type
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__record_type
 msgid "Type"
@@ -1642,11 +1580,6 @@ msgid ""
 "ArticleNumber on the invoice row and the article must exist in Fortnox. Off "
 "by default: rows are sent as free text."
 msgstr "När det är påslaget använder en produkt med Fortnox artikelnummer det numret på fakturaraden, och artikeln måste finnas i Fortnox. Avstängt som standard: raderna skickas som fritext."
-
-#. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
-msgid "Which side is right when a Fortnox record and its Odoo record differ."
-msgstr "Vilken sida som har rätt när en Fortnox-post och dess post i Odoo skiljer sig."
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggestion_reason

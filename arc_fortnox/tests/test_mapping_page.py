@@ -106,23 +106,11 @@ class TestMappingPage(ArcFortnoxF1Common):
         self.assertEqual(rows["1001"].partner_id, self.plast)
         self.assertEqual(len(rows), 4)
 
-    def test_fortnox_is_right_corrects_odoo(self):
+    def test_difference_is_shown_and_odoo_is_never_rewritten(self):
         rows = self._import(CUSTOMER_EXPORT)
         record = rows["1001"].with_user(self.invoicer)
         record.action_use_suggestion()
         self.assertEqual(record.difference, "name")
-        record.action_copy_from_fortnox()
-        self.assertEqual(self.plast.name, "Plasttillverkarna Linköping AB")
-        self.assertEqual(self.plast.company_registry, "556123-4567")
-        self.assertFalse(record.difference)
-
-    def test_odoo_is_right_refuses_to_copy(self):
-        self.company.arc_fortnox_truth_customer = "odoo"
-        rows = self._import(CUSTOMER_EXPORT)
-        record = rows["1001"].with_user(self.invoicer)
-        record.action_use_suggestion()
-        with self.assertRaises(UserError):
-            record.action_copy_from_fortnox()
         self.assertEqual(self.plast.name, "Plasttillverkarna i Linköping AB")
 
     def test_articles_from_swedish_export_suggest_by_internal_reference(self):

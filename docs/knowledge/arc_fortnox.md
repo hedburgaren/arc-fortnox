@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.5.0.
+public repository. Version 18.0.1.5.1.
 
 ## Key models
 
@@ -82,11 +82,10 @@ public repository. Version 18.0.1.5.0.
   variant by `default_code`. Writing `partner_id` or `product_id` (invoicer
   group) writes the number on the Odoo record, clears it on the previous
   one, and refuses a record linked elsewhere. `difference` flags name and
-  organisation number; `action_copy_from_fortnox` corrects the Odoo
-  customer's name and Swedish organisation number when
-  `res.company.arc_fortnox_truth_customer` is `fortnox` (default;
-  `arc_fortnox_truth_article` defaults to `odoo`). Fortnox is never
-  written. Menus: Sales, Configuration, Fortnox, Map Fortnox Customers and
+  organisation number only; no data is copied in either direction (a
+  copy button and per type truth settings were built and removed
+  2026-10-17: the mapping is a one time job, and the first load does it).
+  Fortnox is never written. Menus: Sales, Configuration, Fortnox, Map Fortnox Customers and
   Map Fortnox Articles.
 
 ## Flows

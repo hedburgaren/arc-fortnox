@@ -120,26 +120,6 @@ class ResCompany(models.Model):
         "their sum goes to the invoice's Freight field, where Fortnox "
         "applies its own freight VAT. Empty: freight lines are ordinary rows.",
     )
-    arc_fortnox_truth_customer = fields.Selection(
-        [("fortnox", "Fortnox"), ("odoo", "Odoo")],
-        string="Fortnox: Customers Are Right In",
-        default="fortnox",
-        required=True,
-        help="On the mapping page, where differences between a Fortnox "
-        "customer and its Odoo customer are taken to be correct. Fortnox: "
-        "the page offers to correct Odoo. Odoo: differences are shown to be "
-        "fixed in Fortnox by hand; the module never writes to Fortnox.",
-    )
-    arc_fortnox_truth_article = fields.Selection(
-        [("fortnox", "Fortnox"), ("odoo", "Odoo")],
-        string="Fortnox: Products Are Right In",
-        default="odoo",
-        required=True,
-        help="On the mapping page, where differences between a Fortnox "
-        "article and its Odoo product are taken to be correct. Products are "
-        "never changed from Fortnox; with Odoo, differences are shown to be "
-        "fixed in Fortnox by hand.",
-    )
     arc_fortnox_terms_source = fields.Selection(
         [
             ("order", "The order's payment term"),

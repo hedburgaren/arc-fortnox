@@ -78,10 +78,10 @@ the Odoo record on the right. Load them with **Load from Fortnox** or
 an Odoo customer (same organisation number, or a close name) or product
 variant (same internal reference); confirm with **Use Suggestion** or pick
 another. The link is stored in Odoo only, as the Fortnox customer number
-on the partner and the article number on the variant. Settings, Fortnox,
-Mapping decides which side is right when they differ; with Fortnox right
-for customers, **Correct Odoo from Fortnox** copies the name and
-organisation number to Odoo.
+on the partner and the article number on the variant. A linked row whose
+name or organisation number differs is flagged; neither side is changed,
+since the page is for linking, and data is corrected where it belongs by
+hand.
 
 Companion modules can add warnings shown before an order is queued by
 overriding `sale.order._arc_fortnox_enqueue_warnings()`. The button then

@@ -26,9 +26,6 @@
                 <button name="action_use_suggestion" type="object" string="Use Suggestion" icon="fa-check"
                         invisible="state != 'suggested'"/>
                 <field name="difference" optional="show"/>
-                <field name="truth_source" column_invisible="1"/>
-                <button name="action_copy_from_fortnox" type="object" string="Correct Odoo from Fortnox" icon="fa-download"
-                        invisible="not difference or truth_source != 'fortnox'"/>
                 <field name="state" widget="badge" decoration-success="state == 'linked'" decoration-info="state == 'suggested'"/>
             </list>
         </field>

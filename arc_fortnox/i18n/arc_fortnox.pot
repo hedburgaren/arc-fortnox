@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 20:28+0000\n"
-"PO-Revision-Date: 2026-10-17 20:28+0000\n"
+"POT-Creation-Date: 2026-10-17 20:45+0000\n"
+"PO-Revision-Date: 2026-10-17 20:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -195,11 +195,6 @@ msgid "Contact"
 msgstr ""
 
 #. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
-msgid "Correct Odoo from Fortnox"
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
@@ -347,9 +342,6 @@ msgid "Fiscal Position"
 msgstr ""
 
 #. module: arc_fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__fortnox
 #: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_config
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "Fortnox"
@@ -714,12 +706,6 @@ msgid "Fortnox returned an unexpected response."
 msgstr ""
 
 #. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_customer
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
-msgid "Fortnox: Customers Are Right In"
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
 msgid "Fortnox: Freight Products"
@@ -729,12 +715,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_terms_source
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
 msgid "Fortnox: Payment Terms From"
-msgstr ""
-
-#. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_article
-#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
-msgid "Fortnox: Products Are Right In"
 msgstr ""
 
 #. module: arc_fortnox
@@ -934,11 +914,6 @@ msgid "Map fiscal positions to Fortnox VAT types"
 msgstr ""
 
 #. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
-msgid "Mapping"
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_throttle_calls
 #: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_calls
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
@@ -1010,13 +985,6 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__odoo
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__odoo
-#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__odoo
-msgid "Odoo"
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__partner_id
 msgid "Odoo Customer"
 msgstr ""
@@ -1024,31 +992,6 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__product_id
 msgid "Odoo Product"
-msgstr ""
-
-#. module: arc_fortnox
-#. odoo-python
-#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
-msgid "Odoo is the source of truth for customers in this company."
-msgstr ""
-
-#. module: arc_fortnox
-#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_article
-#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
-msgid ""
-"On the mapping page, where differences between a Fortnox article and its "
-"Odoo product are taken to be correct. Products are never changed from "
-"Fortnox; with Odoo, differences are shown to be fixed in Fortnox by hand."
-msgstr ""
-
-#. module: arc_fortnox
-#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_customer
-#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
-msgid ""
-"On the mapping page, where differences between a Fortnox customer and its "
-"Odoo customer are taken to be correct. Fortnox: the page offers to correct "
-"Odoo. Odoo: differences are shown to be fixed in Fortnox by hand; the module"
-" never writes to Fortnox."
 msgstr ""
 
 #. module: arc_fortnox
@@ -1585,11 +1528,6 @@ msgid "Trigger Mode"
 msgstr ""
 
 #. module: arc_fortnox
-#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__truth_source
-msgid "Truth Source"
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__record_type
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__record_type
 msgid "Type"
@@ -1640,11 +1578,6 @@ msgid ""
 "When enabled, a product with a Fortnox article number configured uses "
 "ArticleNumber on the invoice row and the article must exist in Fortnox. Off "
 "by default: rows are sent as free text."
-msgstr ""
-
-#. module: arc_fortnox
-#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
-msgid "Which side is right when a Fortnox record and its Odoo record differ."
 msgstr ""
 
 #. module: arc_fortnox
