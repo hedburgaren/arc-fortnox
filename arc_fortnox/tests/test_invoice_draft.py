@@ -92,6 +92,42 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
                 return call[2]["Invoice"]
         return None
 
+    def test_freight_lines_go_to_the_freight_field(self):
+        freight = self.env["product.product"].create(
+            {"name": "Freight", "default_code": "FRAKT"}
+        )
+        self.company.arc_fortnox_freight_product_ids = [(6, 0, freight.ids)]
+        self.order.write(
+            {
+                "order_line": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": freight.id,
+                            "name": "Freight DHL",
+                            "product_uom_qty": 1.0,
+                            "price_unit": 200.0,
+                            "discount": 25.0,
+                            "tax_id": [(6, 0, [self.vat25.id])],
+                        },
+                    )
+                ]
+            }
+        )
+        self._invoice_post_result("14")
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        payload = self._post_payload()
+        self.assertEqual(payload["Freight"], 150.0)
+        descriptions = [row.get("Description") for row in payload["InvoiceRows"]]
+        self.assertNotIn("Freight DHL", descriptions)
+        self.assertEqual(len(payload["InvoiceRows"]), 1)
+
+    def test_no_freight_products_keeps_freight_as_a_row(self):
+        self._invoice_post_result("15")
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertNotIn("Freight", self._post_payload())
+
     def test_draft_leaves_terms_to_fortnox_when_customer_terms_win(self):
         self.company.arc_fortnox_terms_source = "customer"
         self._invoice_post_result("13")

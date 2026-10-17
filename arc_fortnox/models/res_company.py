@@ -110,6 +110,16 @@ class ResCompany(models.Model):
         "configured uses ArticleNumber on the invoice row and the article "
         "must exist in Fortnox. Off by default: rows are sent as free text.",
     )
+    arc_fortnox_freight_product_ids = fields.Many2many(
+        "product.product",
+        "arc_fortnox_company_freight_product_rel",
+        "company_id",
+        "product_id",
+        string="Fortnox: Freight Products",
+        help="Order lines with these products are not sent as invoice rows; "
+        "their sum goes to the invoice's Freight field, where Fortnox "
+        "applies its own freight VAT. Empty: freight lines are ordinary rows.",
+    )
     arc_fortnox_terms_source = fields.Selection(
         [
             ("order", "The order's payment term"),

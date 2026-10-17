@@ -57,6 +57,16 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return True
 
+    def _arc_fortnox_enqueue_warnings(self):
+        """Readable warnings shown before the order is queued. Override to add.
+
+        A warning does not refuse: the invoicer confirms in a dialog and
+        the order is queued anyway. The automatic trigger cannot ask, so it
+        leaves an order with warnings out and schedules an activity.
+        """
+        self.ensure_one()
+        return []
+
     def _arc_fortnox_invoice_created(self):
         """Called when the Fortnox draft exists and the number is written."""
         self.ensure_one()
@@ -90,6 +100,8 @@ class SaleOrder(models.Model):
             }
             if self.company_id.sudo().arc_fortnox_terms_source == "order":
                 invoice["TermsOfPayment"] = self._arc_fortnox_payment_term_code()
+            if self._arc_fortnox_freight_lines():
+                invoice["Freight"] = self._arc_fortnox_freight_amount()
             if self.client_order_ref:
                 # The customer's own order reference ("Er ordernummer").
                 invoice["YourOrderNumber"] = self.client_order_ref
@@ -163,14 +175,16 @@ class SaleOrder(models.Model):
 
         Section and note rows become text rows with no price and no
         quantity. Descriptions travel verbatim; above the configured
-        maximum the text continues on continuation rows. Freight,
-        packaging and cutting are ordinary order lines and become ordinary
-        rows: the header fields Freight and AdministrationFee are not used.
+        maximum the text continues on continuation rows. Lines with a
+        configured freight product go to the invoice's Freight field
+        instead (see `_arc_fortnox_freight_amount`); packaging, cutting and
+        everything else become ordinary rows.
         """
         self.ensure_one()
         max_length = self.company_id.sudo().arc_fortnox_max_description_length
+        freight_lines = self._arc_fortnox_freight_lines()
         rows = []
-        for line in self.order_line:
+        for line in self.order_line - freight_lines:
             if line.display_type in ("line_section", "line_note"):
                 rows.append(
                     {
@@ -266,6 +280,30 @@ class SaleOrder(models.Model):
                 code="line_tax_not_percent",
             )
         return tax.amount
+
+    def _arc_fortnox_freight_lines(self):
+        """Order lines whose product is a configured freight product."""
+        self.ensure_one()
+        products = self.company_id.sudo().arc_fortnox_freight_product_ids
+        if not products:
+            return self.env["sale.order.line"]
+        return self.order_line.filtered(
+            lambda line: not line.display_type and line.product_id in products
+        )
+
+    def _arc_fortnox_freight_amount(self):
+        """The Freight header amount: the freight lines summed.
+
+        Same convention as the rows: unit price times quantity less the
+        line discount, so with VATIncluded the amount includes VAT like
+        the row prices do. Fortnox applies its own freight VAT.
+        """
+        self.ensure_one()
+        total = sum(
+            line.price_unit * line.product_uom_qty * (1 - (line.discount or 0) / 100)
+            for line in self._arc_fortnox_freight_lines()
+        )
+        return self.currency_id.round(total)
 
     def _arc_fortnox_line_values(self, line, mapping):
         """Default invoice row payload for one order line. Override to adapt.
@@ -654,7 +692,30 @@ class SaleOrder(models.Model):
             eligible = orders.filtered(
                 lambda order: order._arc_fortnox_enqueue_allowed()
             )
-            self.env["arc.fortnox.queue"]._arc_fortnox_enqueue(eligible)
+            held = self.browse()
+            for order in eligible:
+                warnings = order._arc_fortnox_enqueue_warnings()
+                if warnings:
+                    held |= order
+                    order._arc_fortnox_hold_for_warnings(warnings)
+            self.env["arc.fortnox.queue"]._arc_fortnox_enqueue(eligible - held)
+
+    def _arc_fortnox_hold_for_warnings(self, warnings):
+        """The automatic trigger left the order out: one open activity says why."""
+        self.ensure_one()
+        summary = _("Fortnox: check before queueing")
+        if self.activity_ids.filtered(lambda activity: activity.summary == summary):
+            return
+        self.activity_schedule(
+            "mail.mail_activity_data_todo",
+            summary=summary,
+            note=_(
+                "Not queued automatically: %s Queue it with the button when "
+                "the order is right.",
+                " ".join(warnings),
+            ),
+            user_id=self.user_id.id or self.env.uid,
+        )
 
     def _arc_fortnox_check_enqueue_allowed(self):
         """Raise when the order cannot be enqueued, with a readable reason."""
@@ -710,6 +771,16 @@ class SaleOrder(models.Model):
             )
         for order in self:
             order._arc_fortnox_check_enqueue_allowed()
+        if not self.env.context.get("arc_fortnox_warnings_confirmed"):
+            warnings = [
+                f"{order.name}: {warning}"
+                for order in self
+                for warning in order._arc_fortnox_enqueue_warnings()
+            ]
+            if warnings:
+                return self.env["arc.fortnox.enqueue.confirm"]._arc_fortnox_open(
+                    self, warnings
+                )
         entries = self.env["arc.fortnox.queue"]._arc_fortnox_enqueue(self)
         for order in entries.mapped("sale_order_id"):
             order.message_post(

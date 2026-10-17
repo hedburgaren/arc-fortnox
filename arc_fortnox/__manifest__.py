@@ -1,6 +1,6 @@
 {
     'name': 'Fortnox Bridge (Invoice Drafts)',
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     'category': 'Sales/Sales',
     'summary': 'Push confirmed sales orders to Fortnox as invoice drafts.',
     'description': """
@@ -22,7 +22,7 @@ Every installation registers its own app in the Fortnox developer portal.
 Client credentials are per company and are never shipped with the module.
 """,
     'author': 'ARC Gruppen',
-    'website': 'https://github.com/arcgruppen/arc-fortnox',
+    'website': 'https://github.com/hedburgaren/arc-fortnox',
     'license': 'LGPL-3',
     'depends': ['sale_management'],
     'data': [
@@ -33,6 +33,7 @@ Client credentials are per company and are never shipped with the module.
         'views/sale_order_views.xml',
         'views/arc_fortnox_views.xml',
         'views/inherit_views.xml',
+        'wizard/arc_fortnox_enqueue_confirm_views.xml',
     ],
     'application': False,
     'installable': True,

@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.3.0.
+public repository. Version 18.0.1.4.0.
 
 ## Key models
 
@@ -95,7 +95,17 @@ number and VAT number in their own fields, invoice address and email).
 Draft: `ExternalInvoiceReference1` = order name, `YourOrderNumber` =
 `client_order_ref` when set, `VATIncluded` from the taxes (mixed stops),
 every row with an explicit `VAT` (untaxed under SEVAT stops, otherwise 0;
-non percent taxes stop).
+non percent taxes stop). Lines with a product in
+`res.company.arc_fortnox_freight_product_ids` are not rows: their sum
+(unit price times quantity less discount, the rows' convention) goes to
+`Freight`, where Fortnox applies its own freight VAT.
+
+Warnings: `sale.order._arc_fortnox_enqueue_warnings()` (empty by default,
+for companion modules) is called by the button after the hard checks; any
+warning opens the transient `arc.fortnox.enqueue.confirm` ("Queue anyway"
+re-runs the action with context `arc_fortnox_warnings_confirmed`). The
+trigger cron leaves an order with warnings out and schedules one activity
+"Fortnox: check before queueing" (`_arc_fortnox_hold_for_warnings`).
 
 Token endpoint: HTTP Basic client authentication, the body carries only
 the grant. A 401 refreshes once and retries with the returned token.

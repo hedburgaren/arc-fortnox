@@ -69,6 +69,11 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Fortnox: Send Article Numbers",
     )
+    arc_fortnox_freight_product_ids = fields.Many2many(
+        related="company_id.arc_fortnox_freight_product_ids",
+        readonly=False,
+        string="Fortnox: Freight Products",
+    )
     arc_fortnox_terms_source = fields.Selection(
         related="company_id.arc_fortnox_terms_source",
         readonly=False,

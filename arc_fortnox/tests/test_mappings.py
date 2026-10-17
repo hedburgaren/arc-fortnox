@@ -210,6 +210,22 @@ class TestAutoEnqueueCron(ArcFortnoxF1Common):
             self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
         self.assertFalse(self.queue.search([("sale_order_id", "=", order.id)]))
 
+    def test_auto_enqueue_holds_order_with_warnings(self):
+        order = self._confirmed_order()
+        with patch.object(
+            type(order),
+            "_arc_fortnox_enqueue_warnings",
+            lambda self: ["Freight is missing."],
+        ):
+            self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
+            self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
+        self.assertFalse(self.queue.search([("sale_order_id", "=", order.id)]))
+        activities = order.activity_ids.filtered(
+            lambda activity: activity.summary == "Fortnox: check before queueing"
+        )
+        self.assertEqual(len(activities), 1, "One activity, not one per cron run.")
+        self.assertIn("Freight is missing.", activities.note)
+
     def test_manual_mode_enqueues_nothing(self):
         self.company.write({"arc_fortnox_trigger_mode": "manual"})
         self._confirmed_order()

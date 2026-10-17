@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 18:07+0000\n"
-"PO-Revision-Date: 2026-10-17 18:07+0000\n"
+"POT-Creation-Date: 2026-10-17 18:28+0000\n"
+"PO-Revision-Date: 2026-10-17 18:28+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -97,6 +97,7 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_enqueue_confirm_form
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_queue_form
 msgid "Cancel"
 msgstr ""
@@ -162,6 +163,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_uid
 msgid "Created by"
@@ -169,6 +171,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_date
 msgid "Created on"
@@ -216,6 +219,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__display_name
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__display_name
 msgid "Display Name"
@@ -595,6 +599,12 @@ msgid "Fortnox returned an unexpected response."
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
+msgid "Fortnox: Freight Products"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_terms_source
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
 msgid "Fortnox: Payment Terms From"
@@ -604,6 +614,17 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_send_article_numbers
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_send_article_numbers
 msgid "Fortnox: Send Article Numbers"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid "Fortnox: check before queueing"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_arc_fortnox_enqueue_confirm
+msgid "Fortnox: confirm queueing despite warnings"
 msgstr ""
 
 #. module: arc_fortnox
@@ -628,6 +649,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__id
 msgid "ID"
@@ -664,6 +686,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_uid
 msgid "Last Updated by"
@@ -671,6 +694,7 @@ msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_date
 msgid "Last Updated on"
@@ -767,6 +791,14 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_credential__state__not_authorized
 msgid "Not authorized"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"Not queued automatically: %s Queue it with the button when the order is "
+"right."
 msgstr ""
 
 #. module: arc_fortnox
@@ -879,6 +911,20 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
+msgid ""
+"Order lines with these products are not sent as invoice rows; their sum goes"
+" to the invoice's Freight field, where Fortnox applies its own freight VAT. "
+"Empty: freight lines are ordinary rows."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__sale_order_ids
+msgid "Orders"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model,name:arc_fortnox.model_account_payment_term
 msgid "Payment Terms"
 msgstr ""
@@ -915,6 +961,11 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_enqueue_confirm_form
+msgid "Queue anyway"
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Queue entry %s gave up after %s attempts. Last error: %s (%s)."
@@ -923,6 +974,13 @@ msgstr ""
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_order_form_inherit_arc_fortnox
 msgid "Queue for Fortnox"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/wizard/arc_fortnox_enqueue_confirm.py:0
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_enqueue_confirm_form
+msgid "Queue for Fortnox?"
 msgstr ""
 
 #. module: arc_fortnox
@@ -1243,6 +1301,11 @@ msgstr ""
 msgid ""
 "Used on invoice rows when sending article numbers is enabled in the Fortnox "
 "settings. The article must exist in Fortnox."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__warning_text
+msgid "Warnings"
 msgstr ""
 
 #. module: arc_fortnox

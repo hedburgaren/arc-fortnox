@@ -83,6 +83,10 @@
                                 <label for="arc_fortnox_terms_source" class="col-lg-3 o_light_label"/>
                                 <field name="arc_fortnox_terms_source"/>
                             </div>
+                            <div class="row">
+                                <label for="arc_fortnox_freight_product_ids" class="col-lg-3 o_light_label"/>
+                                <field name="arc_fortnox_freight_product_ids" widget="many2many_tags"/>
+                            </div>
                         </setting>
                     </block>
                 </app>

@@ -23,6 +23,27 @@ class TestEnqueue(ArcFortnoxF1Common):
         self.assertEqual(entry.company_id, self.company)
         self.assertEqual(entry.attempts, 0)
 
+    def test_warnings_ask_before_queueing(self):
+        order = self._create_confirmed_order()
+        with patch.object(
+            type(order),
+            "_arc_fortnox_enqueue_warnings",
+            lambda self: ["Freight is missing."],
+        ):
+            action = order.with_user(self.invoicer).action_arc_fortnox_enqueue()
+            self.assertEqual(action["res_model"], "arc.fortnox.enqueue.confirm")
+            self.assertFalse(self.queue.search([("sale_order_id", "=", order.id)]))
+            wizard = (
+                self.env["arc.fortnox.enqueue.confirm"]
+                .with_user(self.invoicer)
+                .browse(action["res_id"])
+            )
+            self.assertIn("Freight is missing.", wizard.warning_text)
+            self.assertIn(order.name, wizard.warning_text)
+            wizard.action_confirm()
+        entry = self.queue.search([("sale_order_id", "=", order.id)])
+        self.assertEqual(entry.state, "pending")
+
     def test_enqueue_requires_invoicer_group(self):
         order = self._create_confirmed_order()
         with self.assertRaises(AccessError):

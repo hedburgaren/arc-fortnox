@@ -67,6 +67,12 @@ clear error instead of guessing:
 | Units of measure to Fortnox unit codes | Field `Fortnox Unit Code` on each unit of measure |
 | Optional: article numbers and per product revenue accounts | Fields on the product form |
 | Optional: link existing Fortnox customers | Field `Fortnox Customer Number` on the company partner |
+| Optional: freight products, whose lines go to the invoice's Freight field instead of rows | Settings, Fortnox, Invoice Rows |
+
+Companion modules can add warnings shown before an order is queued by
+overriding `sale.order._arc_fortnox_enqueue_warnings()`. The button then
+asks for confirmation; the automatic trigger leaves such orders out and
+schedules an activity instead.
 
 VAT types: `SEVAT` (Swedish VAT), `EUREVERSEDVAT` (EU reverse VAT),
 `EUVAT`, `EXPORT` (outside the EU).
