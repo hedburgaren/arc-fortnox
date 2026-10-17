@@ -33,4 +33,16 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_partner_form_inherit_arc_fortnox" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.arc_fortnox</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="arc_fortnox_customer_number" groups="arc_fortnox.group_invoicer"
+                       invisible="parent_id"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

@@ -42,7 +42,7 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
             }
         )
         self.partner = self.env["res.partner"].create(
-            {"name": "Draft Builder Partner", "ref": "7"}
+            {"name": "Draft Builder Partner", "arc_fortnox_customer_number": "7"}
         )
         self.product = self.env["product.product"].create(
             {"name": "Draft Builder Product", "list_price": 100.0}
@@ -383,3 +383,24 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
         with self.assertRaises(FortnoxError) as context:
             self.order._arc_fortnox_push_draft(self.fake_client)
         self.assertEqual(context.exception.error_code, "line_tax_not_percent")
+
+    def test_created_customer_survives_a_failed_draft_step(self):
+        # Audit D-10: the customer exists in Fortnox now; a retry must find
+        # its number on the partner instead of creating it again.
+        self.partner.write({"arc_fortnox_customer_number": False})
+        self.fake_client._get_results.clear()
+        self.fake_client._post_results.extend(
+            [
+                {"Customer": {"CustomerNumber": "43"}},
+                FortnoxError("timeout", code="timeout"),
+            ]
+        )
+        # try/except on purpose: assertRaises rolls back a savepoint and
+        # would hide what the draft step leaves behind.
+        try:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        except FortnoxError:
+            pass
+        else:
+            self.fail("The draft step should have failed.")
+        self.assertEqual(self.partner.arc_fortnox_customer_number, "43")

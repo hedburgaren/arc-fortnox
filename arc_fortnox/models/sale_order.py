@@ -14,13 +14,6 @@ _logger = logging.getLogger(__name__)
 
 GROUP_INVOICER = "arc_fortnox.group_invoicer"
 
-COUNTRY_PREFIXES = {
-    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE",
-    "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT",
-    "RO", "SK", "SI", "ES", "SE",
-}
-
-
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
@@ -344,18 +337,40 @@ class SaleOrder(models.Model):
 
     @staticmethod
     def _arc_fortnox_normalise_org_number(value):
-        """Compare organisation numbers ignoring case, dashes and spaces.
+        """Reduce an organisation number to the form used for comparison.
 
-        A leading country code is dropped so that Odoo's VAT form
-        (SE556123456701) matches Fortnox' bare organisation number
-        (5561234567).
+        Swedish forms all become the bare ten digits: 556123-4567, a
+        Swedish VAT number SE556123456701 (country code and the trailing 01
+        dropped), and a personal identity number written with the century,
+        19800101-1234. Other values keep their characters without
+        separators, uppercased, so a foreign registry number still
+        compares with itself.
         """
         if not value:
             return ""
         cleaned = re.sub(r"[^A-Za-z0-9]", "", value).upper()
-        if len(cleaned) > 10 and cleaned[:2] in COUNTRY_PREFIXES:
-            cleaned = cleaned[2:]
+        if cleaned.startswith("SE") and cleaned[2:].isdigit():
+            digits = cleaned[2:]
+            if len(digits) == 12 and digits.endswith("01"):
+                return digits[:10]
+            return digits
+        if cleaned.isdigit() and len(cleaned) == 12 and cleaned[:2] in ("19", "20"):
+            return cleaned[2:]
         return cleaned
+
+    def _arc_fortnox_partner_org_number(self, partner):
+        """The organisation number of the partner, normalised.
+
+        The company registry field wins; without it a Swedish VAT number is
+        reduced to the organisation number it contains. A foreign VAT
+        number is not an organisation number and gives nothing.
+        """
+        if partner.company_registry:
+            return self._arc_fortnox_normalise_org_number(partner.company_registry)
+        vat = re.sub(r"[^A-Za-z0-9]", "", partner.vat or "").upper()
+        if vat.startswith("SE"):
+            return self._arc_fortnox_normalise_org_number(vat)
+        return ""
 
     def _arc_fortnox_check_customer_mismatch(self, customer):
         """Stop with a distinct error when Fortnox disagrees with the order.
@@ -409,98 +424,128 @@ class SaleOrder(models.Model):
                 code="customer_payment_term_mismatch",
             )
 
+    def _arc_fortnox_check_customer_identity(self, customer, partner):
+        """Stop when the Fortnox customer is a different legal person.
+
+        Compared on the organisation number when both sides carry one. A
+        customer number that points at somebody else must never receive
+        the draft, and the matching VAT type, currency and terms of most
+        domestic customers would not catch it.
+        """
+        ours = self._arc_fortnox_partner_org_number(partner)
+        theirs = self._arc_fortnox_normalise_org_number(
+            customer.get("OrganisationNumber")
+        )
+        if ours and theirs and ours != theirs:
+            raise FortnoxError(
+                _(
+                    "Fortnox customer %s carries another organisation number "
+                    "than the partner. Correct the Fortnox customer number "
+                    "on the partner, then retry.",
+                    customer.get("CustomerNumber"),
+                ),
+                code="customer_identity_mismatch",
+            )
+
     def _arc_fortnox_customer_payload(self):
         """Default Fortnox customer payload. Override to adapt.
 
         The mapping resolvers are used deliberately: an unmapped VAT type or
-        payment term stops the push before the customer is created.
+        payment term stops the push before the customer is created. The
+        address and the invoice email come from the order's invoice
+        address, falling back to the company for what it lacks.
         """
         self.ensure_one()
         partner = self.partner_invoice_id.commercial_partner_id
+        invoice_address = self.partner_invoice_id
         mapping = self._arc_fortnox_vat_mapping()
         payload = {
             "Name": partner.name,
+            "Type": "COMPANY" if partner.is_company else "PRIVATE",
             "VATType": mapping.vat_type,
             "Currency": self.currency_id.name,
             "TermsOfPayment": self._arc_fortnox_payment_term_code(),
         }
+        org_number = partner.company_registry or self._arc_fortnox_partner_org_number(
+            partner
+        )
+        if org_number:
+            payload["OrganisationNumber"] = org_number
         if partner.vat:
-            payload["OrganisationNumber"] = partner.vat
             payload["VATNumber"] = partner.vat
-        address = partner
+        address = invoice_address if invoice_address.street else partner
         if address.street:
             payload["Address1"] = address.street
+        if address.street2:
+            payload["Address2"] = address.street2
         if address.zip:
             payload["ZipCode"] = address.zip
         if address.city:
             payload["City"] = address.city
         if address.country_id:
             payload["CountryCode"] = address.country_id.code
-        if partner.email:
-            payload["EmailInvoice"] = partner.email
+        email = invoice_address.email or partner.email
+        if email:
+            payload["EmailInvoice"] = email
         return payload
 
     def _arc_fortnox_resolve_customer(self, client):
         """Return the Fortnox customer number for this order's customer.
 
-        1. The partner reference holds a Fortnox customer number: the
-           customer must exist there, a stale reference stops the push.
-        2. No reference: search Fortnox by organisation number. A hit is
-           adopted into the reference without touching Fortnox.
+        1. The partner carries a Fortnox customer number: the customer must
+           exist there and be the same legal person; a stale or foreign
+           number stops the push.
+        2. No number: search Fortnox by organisation number. Exactly one
+           customer with that number is adopted onto the partner without
+           touching Fortnox; more than one stops the push.
         3. Still nothing: the customer is created once from the payload
-           hook and the returned number is stored in the reference.
+           hook and the returned number is stored on the partner.
 
         Existing customers are never updated in v1.
         """
         self.ensure_one()
         partner = self.partner_invoice_id.commercial_partner_id.sudo()
-        if partner.ref:
-            duplicates = self.env["res.partner"].sudo().search_count(
-                [("ref", "=", partner.ref), ("id", "!=", partner.id)]
-            )
-            if duplicates:
-                raise FortnoxError(
-                    _(
-                        "Reference %s is used by more than one partner. "
-                        "Fortnox cannot be resolved for %s until it is "
-                        "unique.",
-                        partner.ref,
-                        partner.display_name,
-                    ),
-                    code="customer_ref_duplicate",
-                )
+        number = partner.arc_fortnox_customer_number
+        if number:
             try:
-                found = client.get(f"customers/{partner.ref}")
+                found = client.get(f"customers/{quote(number, safe='')}")
             except FortnoxError as error:
                 if error.http_status == 404:
                     raise FortnoxError(
                         _(
-                            "Partner %s references Fortnox customer %s, but "
+                            "The partner references Fortnox customer %s, but "
                             "no such customer exists there. The push stops "
                             "instead of creating a customer on a stale "
                             "reference.",
-                            partner.display_name,
-                            partner.ref,
+                            number,
                         ),
                         code="customer_ref_stale",
                         http_status=404,
                     ) from error
                 raise
             customer = found.get("Customer") or {}
+            self._arc_fortnox_check_customer_identity(customer, partner)
             self._arc_fortnox_check_customer_mismatch(customer)
-            return partner.ref
+            return number
 
-        normalised = self._arc_fortnox_normalise_org_number(partner.vat)
-        if normalised:
-            found = client.get(
-                "customers", params={"organisationnumber": normalised}
-            )
-            customers = (found or {}).get("Customers") or []
+        org_number = self._arc_fortnox_partner_org_number(partner)
+        if org_number:
+            customers = self._arc_fortnox_search_customers(client, org_number)
+            if len(customers) > 1:
+                raise FortnoxError(
+                    _(
+                        "Fortnox has %s customers with the organisation number "
+                        "of this partner. Set the right Fortnox customer number "
+                        "on the partner, then retry.",
+                        len(customers),
+                    ),
+                    code="customer_orgnr_ambiguous",
+                )
             if customers:
-                number = str(customers[0].get("CustomerNumber") or "")
+                customer = customers[0]
+                number = str(customer.get("CustomerNumber") or "")
                 if number:
-                    partner.write({"ref": number})
-                    customer = customers[0]
+                    partner.write({"arc_fortnox_customer_number": number})
                     self._arc_fortnox_check_customer_mismatch(customer)
                     return number
 
@@ -511,12 +556,35 @@ class SaleOrder(models.Model):
         number = str(customer.get("CustomerNumber") or "")
         if not number:
             raise FortnoxError(
-                _("Fortnox did not return a customer number for %s.",
-                  partner.display_name),
+                _("Fortnox did not return a customer number for the order's customer."),
                 code="customer_creation_no_number",
             )
-        partner.write({"ref": number})
+        partner.write({"arc_fortnox_customer_number": number})
         return number
+
+    def _arc_fortnox_search_customers(self, client, org_number):
+        """Fortnox customers whose organisation number equals org_number.
+
+        Fortnox stores the number as it was typed, with or without the
+        dash, so a Swedish ten digit number is searched in both forms. The
+        hits are compared after normalisation, never trusted as returned.
+        """
+        variants = [org_number]
+        if len(org_number) == 10 and org_number.isdigit():
+            variants.append(f"{org_number[:6]}-{org_number[6:]}")
+        matches = {}
+        for variant in variants:
+            found = client.get("customers", params={"organisationnumber": variant})
+            for customer in (found or {}).get("Customers") or []:
+                theirs = self._arc_fortnox_normalise_org_number(
+                    customer.get("OrganisationNumber")
+                )
+                number = str(customer.get("CustomerNumber") or "")
+                if number and theirs == org_number:
+                    matches[number] = customer
+            if matches:
+                break
+        return list(matches.values())
 
     @api.model
     def _arc_fortnox_cron_auto_enqueue(self):

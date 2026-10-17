@@ -19,6 +19,8 @@ class FakeClient:
         if path == "invoices" and not self._get_results:
             # The draft search before every post: nothing found.
             return {"Invoices": []}
+        if path == "customers" and not self._get_results:
+            return {"Customers": []}
         outcome = self._get_results.pop(0)
         if isinstance(outcome, Exception):
             raise outcome
