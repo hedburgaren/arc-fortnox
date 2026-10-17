@@ -341,8 +341,9 @@ class SaleOrder(models.Model):
 
         Swedish forms all become the bare ten digits: 556123-4567, a
         Swedish VAT number SE556123456701 (country code and the trailing 01
-        dropped), and a personal identity number written with the century,
-        19800101-1234. Other values keep their characters without
+        dropped), a personal identity number written with the century,
+        19800101-1234, and an organisation number with the 16 prefix of
+        the twelve digit form, 165561234567. Other values keep their characters without
         separators, uppercased, so a foreign registry number still
         compares with itself.
         """
@@ -354,7 +355,7 @@ class SaleOrder(models.Model):
             if len(digits) == 12 and digits.endswith("01"):
                 return digits[:10]
             return digits
-        if cleaned.isdigit() and len(cleaned) == 12 and cleaned[:2] in ("19", "20"):
+        if cleaned.isdigit() and len(cleaned) == 12 and cleaned[:2] in ("16", "19", "20"):
             return cleaned[2:]
         return cleaned
 
@@ -582,8 +583,8 @@ class SaleOrder(models.Model):
                 number = str(customer.get("CustomerNumber") or "")
                 if number and theirs == org_number:
                     matches[number] = customer
-            if matches:
-                break
+        # Both forms are always searched: two customers stored in different
+        # forms are two hits, and two hits stop rather than pick one.
         return list(matches.values())
 
     @api.model

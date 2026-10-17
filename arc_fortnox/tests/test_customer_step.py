@@ -78,6 +78,7 @@ class TestCustomerStep(ArcFortnoxF1Common):
         self.assertEqual(normalise("se 5561234567 01"), "5561234567")
         # Personal identity numbers with the century.
         self.assertEqual(normalise("19800101-1234"), "8001011234")
+        self.assertEqual(normalise("16556123-4567"), "5561234567")
         self.assertEqual(normalise("DE123456789"), "DE123456789")
         self.assertEqual(normalise(False), "")
 
@@ -154,11 +155,13 @@ class TestCustomerStep(ArcFortnoxF1Common):
         number = self.order._arc_fortnox_resolve_customer(self.fake_client)
         self.assertEqual(number, "42")
         self.assertEqual(self.partner.read(["arc_fortnox_customer_number"])[0]["arc_fortnox_customer_number"], "42")
-        self.assertEqual(len(self.fake_client.calls), 1)
-        self.assertEqual(self.fake_client.calls[0][0], "GET")
+        # Both forms are searched, nothing else is called.
         self.assertEqual(
-            self.fake_client.calls[0][2],
-            {"organisationnumber": "5561234567"},
+            [(call[0], call[2]) for call in self.fake_client.calls],
+            [
+                ("GET", {"organisationnumber": "5561234567"}),
+                ("GET", {"organisationnumber": "556123-4567"}),
+            ],
         )
 
     def test_orgnr_found_in_dashed_form(self):
@@ -191,6 +194,28 @@ class TestCustomerStep(ArcFortnoxF1Common):
                     self.fake_customer(CustomerNumber="43", OrganisationNumber="556123-4567"),
                 ]
             }
+        )
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_resolve_customer(self.fake_client)
+        self.assertEqual(context.exception.error_code, "customer_orgnr_ambiguous")
+        self.assertNotIn("POST", [call[0] for call in self.fake_client.calls])
+
+    def test_orgnr_in_both_forms_stops(self):
+        # Verifier D-7: one customer stored plain, another with the dash.
+        self.partner.write({"company_registry": "5561234567"})
+        self.fake_client._get_results.extend(
+            [
+                {
+                    "Customers": [
+                        self.fake_customer(CustomerNumber="42", OrganisationNumber="5561234567")
+                    ]
+                },
+                {
+                    "Customers": [
+                        self.fake_customer(CustomerNumber="43", OrganisationNumber="556123-4567")
+                    ]
+                },
+            ]
         )
         with self.assertRaises(FortnoxError) as context:
             self.order._arc_fortnox_resolve_customer(self.fake_client)

@@ -187,20 +187,27 @@ class ArcFortnoxQueue(models.Model):
                 entry.write({"state": "sending"})
                 if commit:
                     self.env.cr.commit()
+            # One savepoint per entry. A FortnoxError is caught inside it,
+            # so what the steps kept (a created customer's number) stays;
+            # anything else, a database error included, rolls the entry's
+            # work back and leaves the cursor usable for the next one.
+            failure = None
             try:
-                entry._arc_fortnox_process_one()
-            except FortnoxError as error:
-                entry._arc_fortnox_register_failure(error)
+                with self.env.cr.savepoint():
+                    try:
+                        entry._arc_fortnox_process_one()
+                    except FortnoxError as error:
+                        failure = error
             except Exception:
                 _logger.exception(
                     "Fortnox queue entry %s failed unexpectedly", entry.id
                 )
-                entry._arc_fortnox_register_failure(
-                    FortnoxError(
-                        _("Unexpected error while sending to Fortnox."),
-                        code="unexpected_error",
-                    )
+                failure = FortnoxError(
+                    _("Unexpected error while sending to Fortnox."),
+                    code="unexpected_error",
                 )
+            if failure:
+                entry._arc_fortnox_register_failure(failure)
             if commit:
                 self.env.cr.commit()
         return True

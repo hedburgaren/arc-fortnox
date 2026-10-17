@@ -82,6 +82,30 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         bodies = order.message_ids.mapped("body")
         self.assertTrue(any("101" in body for body in bodies))
 
+    def test_database_error_in_one_entry_does_not_stop_the_run(self):
+        # Verifier D-10: one savepoint per entry, not only per step.
+        self._patch_client()
+        order_a, entry_a = self._enqueue()
+        order_b, entry_b = self._enqueue()
+
+        def push(order, client):
+            if order == order_a:
+                order.env.cr.execute("SELECT 1/0")
+            return "102"
+
+        with patch.object(type(order_a), "_arc_fortnox_push_draft", push), mute_logger(
+            "odoo.addons.arc_fortnox.models.arc_fortnox_queue", "odoo.sql_db"
+        ):
+            self._run_cron()
+        self.env.flush_all()
+
+        self.assertEqual(entry_a.state, "pending")
+        self.assertEqual(entry_a.error_code, "unexpected_error")
+        self.assertEqual(entry_a.attempts, 1)
+        self.assertFalse(order_a.arc_fortnox_invoice_number)
+        self.assertEqual(entry_b.state, "done")
+        self.assertEqual(order_b.arc_fortnox_invoice_number, "102")
+
     def test_failure_applies_first_backoff_step(self):
         self._patch_client()
         order, entry = self._enqueue()

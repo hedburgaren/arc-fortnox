@@ -1,6 +1,6 @@
 {
     'name': 'Fortnox Bridge (Invoice Drafts)',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
     'category': 'Sales/Sales',
     'summary': 'Push confirmed sales orders to Fortnox as invoice drafts.',
     'description': """

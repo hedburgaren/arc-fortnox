@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.1.0.
+public repository. Version 18.0.1.1.1.
 
 ## Key models
 
@@ -39,7 +39,10 @@ public repository. Version 18.0.1.1.0.
   `base.group_system` full. `action_retry` (error to pending, attempts
   reset) and `action_cancel` (pending or error) check the invoicer group
   and write with sudo. Cron `_arc_fortnox_cron_process` every 5 minutes,
-  one commit per entry, pending committed as sending before any API call.
+  one savepoint and one commit per entry, pending committed as sending
+  before any API call. A `FortnoxError` is caught inside the savepoint
+  (what the steps kept stays); any other error, a database error
+  included, rolls the entry back and the run goes on.
   `_arc_fortnox_process_one`: order no longer `sale` or already numbered
   cancels the entry; then `sale.order._arc_fortnox_find_existing_draft`
   in a savepoint, on every attempt; a hit is adopted, otherwise
@@ -75,9 +78,10 @@ savepoint, so a created customer keeps its number when the draft fails.
 Customer step: partner number set, GET the customer (quoted path), check
 the organisation number (`customer_identity_mismatch`) and VAT type,
 currency, terms. No number: organisation number from `company_registry`,
-else from a Swedish VAT number (`SE` and trailing `01` dropped); search
-`customers?organisationnumber=` with and without dash, compare after
-normalisation, exactly one is adopted, more stop
+else from a Swedish VAT number (`SE` and trailing `01` dropped; the
+twelve digit forms with `16`, `19` or `20` lose the prefix); search
+`customers?organisationnumber=` with and without dash, always both,
+compare after normalisation, exactly one is adopted, more stop
 (`customer_orgnr_ambiguous`). Nothing: create from
 `_arc_fortnox_customer_payload` (Type COMPANY or PRIVATE, organisation
 number and VAT number in their own fields, invoice address and email).
