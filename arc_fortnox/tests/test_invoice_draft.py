@@ -98,7 +98,9 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
         self.assertEqual(number, "12")
         payload = self._post_payload()
         self.assertEqual(payload["CustomerNumber"], "7")
-        self.assertEqual(payload["YourOrderNumber"], self.order.name)
+        self.assertNotIn(
+            "YourOrderNumber", payload, "Without a customer reference it stays empty."
+        )
         self.assertEqual(
             payload["ExternalInvoiceReference1"], self.order.name
         )
@@ -108,6 +110,12 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
             {"Booked", "Sent", "ExternalPrint"} & set(payload.keys()),
             "The payload must be a draft only.",
         )
+
+    def test_customer_reference_travels_as_your_order_number(self):
+        self.order.client_order_ref = "PO-4711"
+        self._invoice_post_result("12")
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(self._post_payload()["YourOrderNumber"], "PO-4711")
 
     def test_row_without_article_by_default(self):
         self._invoice_post_result()

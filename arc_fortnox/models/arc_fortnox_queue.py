@@ -137,20 +137,15 @@ class ArcFortnoxQueue(models.Model):
         crash never loses the state of the entries already handled.
         """
         for entry in self._arc_fortnox_due_entries():
-            crashed = False
             if entry.state == "pending":
-                # Committed before any API call: if the process dies during
-                # the request, the sending state tells the next run to look
-                # for an already created draft before posting again.
+                # Committed before any API call. Every attempt searches
+                # Fortnox before it posts, so a crash or a lost answer at
+                # any point is recovered by the next attempt.
                 entry.write({"state": "sending"})
                 if commit:
                     self.env.cr.commit()
-            else:
-                # Found in sending: a previous run may have died after the
-                # POST, so the push must adopt before it duplicates.
-                crashed = True
             try:
-                entry._arc_fortnox_process_one(recover=crashed)
+                entry._arc_fortnox_process_one()
             except FortnoxError as error:
                 entry._arc_fortnox_register_failure(error)
             except Exception:
@@ -159,7 +154,7 @@ class ArcFortnoxQueue(models.Model):
                 )
                 entry._arc_fortnox_register_failure(
                     FortnoxError(
-                        _("Unexpected error while pushing to Fortnox."),
+                        _("Unexpected error while sending to Fortnox."),
                         code="unexpected_error",
                     )
                 )
@@ -167,30 +162,52 @@ class ArcFortnoxQueue(models.Model):
                 self.env.cr.commit()
         return True
 
-    def _arc_fortnox_process_one(self, recover=False):
-        """Push one entry. Assumes a sending state.
+    def _arc_fortnox_process_one(self):
+        """Send one entry. Assumes a sending state.
 
-        With recover set, the entry was found in sending from a previous
-        run: Fortnox is searched by YourOrderNumber first and an existing
-        draft is adopted instead of duplicated.
+        The order is checked first: an order that is no longer confirmed,
+        or already carries a Fortnox number, is not sent again. Then Fortnox
+        is searched for a live draft with this order's reference, on every
+        attempt, so a timeout after Fortnox accepted the draft, a crash, or
+        a failed write back can never produce a second draft. Only when
+        nothing is found is a new draft posted.
         """
         self.ensure_one()
         order = self.sale_order_id
+        if order.state != "sale":
+            return self._arc_fortnox_cancel_entry(
+                _("Order %s is no longer confirmed; nothing was sent.", order.name)
+            )
+        if order.arc_fortnox_invoice_number:
+            return self._arc_fortnox_cancel_entry(
+                _(
+                    "Order %s already has Fortnox invoice %s; nothing was sent.",
+                    order.name,
+                    order.arc_fortnox_invoice_number,
+                )
+            )
         client = self.company_id.arc_fortnox_client()
-        if recover:
-            found = client.get("invoices", params={"yourordernumber": order.name})
-            invoices = (found or {}).get("Invoices") or []
-            if invoices:
-                number = str(invoices[0].get("DocumentNumber") or "")
-                if number:
-                    return self._arc_fortnox_mark_done(number)
-        number = order._arc_fortnox_push_draft(client)
-        return self._arc_fortnox_mark_done(number)
+        with self.env.cr.savepoint():
+            existing = order._arc_fortnox_find_existing_draft(client)
+        if existing:
+            return self._arc_fortnox_mark_done(existing, adopted=True)
         number = order._arc_fortnox_push_draft(client)
         return self._arc_fortnox_mark_done(number)
 
-    def _arc_fortnox_mark_done(self, number):
-        """Adopt the Fortnox draft number and close the entry."""
+    def _arc_fortnox_cancel_entry(self, reason):
+        self.ensure_one()
+        self.write({"state": "cancelled", "error_code": False, "error_text": reason})
+        self.sale_order_id.message_post(body=reason)
+        return True
+
+    def _arc_fortnox_mark_done(self, number, adopted=False):
+        """Adopt the Fortnox draft number and close the entry.
+
+        The number and the done state are what keeps the draft from being
+        sent twice, so they are written first. The companion hook and the
+        chatter note follow in a savepoint of their own: a failure there is
+        logged and raised as an activity, and never makes the entry retry.
+        """
         self.ensure_one()
         order = self.sale_order_id
         self.write(
@@ -202,10 +219,32 @@ class ArcFortnoxQueue(models.Model):
             }
         )
         order.write({"arc_fortnox_invoice_number": number})
-        order._arc_fortnox_invoice_created()
-        order.message_post(
-            body=_("Fortnox invoice draft %s created.", number)
-        )
+        try:
+            with self.env.cr.savepoint():
+                order._arc_fortnox_invoice_created()
+                if adopted:
+                    body = _("Existing Fortnox invoice draft %s adopted.", number)
+                else:
+                    body = _("Fortnox invoice draft %s created.", number)
+                order.message_post(body=body)
+        except Exception:
+            _logger.exception(
+                "Fortnox queue entry %s: follow up after draft %s failed",
+                self.id,
+                number,
+            )
+            with self.env.cr.savepoint():
+                order.activity_schedule(
+                    "mail.mail_activity_data_todo",
+                    summary=_("Fortnox follow up failed"),
+                    note=_(
+                        "Fortnox invoice draft %s exists and is recorded on "
+                        "the order, but the follow up steps after it failed. "
+                        "See the server log for queue entry %s.",
+                        number,
+                        self.id,
+                    ),
+                )
         return True
 
     def _arc_fortnox_register_failure(self, error):

@@ -1,6 +1,7 @@
 import ast
 import logging
 import re
+from urllib.parse import quote
 
 from odoo import api, fields, models
 from odoo.exceptions import AccessError, UserError
@@ -76,29 +77,91 @@ class SaleOrder(models.Model):
 
         Draft only: the payload never books, sends, prints or emails. The
         human does that from Fortnox.
+
+        The customer step and the draft step run in savepoints of their
+        own, one after the other: a customer created in Fortnox keeps its
+        number on the partner even when the draft step fails afterwards, so
+        a retry finds it instead of creating it again.
         """
         self.ensure_one()
         mapping = self._arc_fortnox_vat_mapping()
-        customer_number = self._arc_fortnox_resolve_customer(client)
-        payload = {
-            "Invoice": {
+        with self.env.cr.savepoint():
+            customer_number = self._arc_fortnox_resolve_customer(client)
+        with self.env.cr.savepoint():
+            invoice = {
                 "CustomerNumber": customer_number,
                 "Currency": self.currency_id.name,
                 "TermsOfPayment": self._arc_fortnox_payment_term_code(),
-                "YourOrderNumber": self.name,
                 "ExternalInvoiceReference1": self.name,
                 "InvoiceRows": self._arc_fortnox_invoice_rows(mapping),
             }
-        }
-        response = client.post("invoices", payload)
-        invoice = (response or {}).get("Invoice") or {}
-        number = str(invoice.get("DocumentNumber") or "")
+            if self.client_order_ref:
+                # The customer's own order reference ("Er ordernummer").
+                invoice["YourOrderNumber"] = self.client_order_ref
+            response = client.post("invoices", {"Invoice": invoice})
+        created = (response or {}).get("Invoice") or {}
+        number = str(created.get("DocumentNumber") or "")
         if not number:
             raise FortnoxError(
                 _("Fortnox did not return an invoice number for %s.", self.name),
                 code="invoice_no_number",
             )
         return number
+
+    def _arc_fortnox_find_existing_draft(self, client):
+        """Return the number of the live Fortnox invoice for this order.
+
+        Fortnox is searched by ExternalInvoiceReference1, which this module
+        sets to the order name. Cancelled invoices are ignored, a hit is
+        only adopted when its reference equals the order name exactly, and
+        more than one live hit stops the entry instead of guessing. Returns
+        an empty string when there is nothing to adopt.
+        """
+        self.ensure_one()
+        found = client.get(
+            "invoices", params={"externalinvoicereference1": self.name}
+        )
+        matches = []
+        for listed in (found or {}).get("Invoices") or []:
+            number = str(listed.get("DocumentNumber") or "")
+            if not number:
+                continue
+            invoice = listed
+            if "ExternalInvoiceReference1" not in invoice or "Cancelled" not in invoice:
+                detail = client.get(f"invoices/{quote(number, safe='')}")
+                invoice = (detail or {}).get("Invoice") or {}
+            if invoice.get("Cancelled"):
+                continue
+            if (invoice.get("ExternalInvoiceReference1") or "") != self.name:
+                continue
+            matches.append(number)
+        if len(matches) > 1:
+            raise FortnoxError(
+                _(
+                    "Fortnox holds more than one live invoice with reference "
+                    "%s (%s). Cancel the extra ones in Fortnox, then retry.",
+                    self.name,
+                    ", ".join(matches),
+                ),
+                code="invoice_reference_ambiguous",
+            )
+        return matches[0] if matches else ""
+
+    def _action_cancel(self):
+        """Cancelling an order withdraws it from the Fortnox queue.
+
+        Pending and failed entries are cancelled. An entry in sending is
+        left to the queue, which checks the order state before it sends.
+        """
+        result = super()._action_cancel()
+        entries = self.env["arc.fortnox.queue"].sudo().search(
+            [
+                ("sale_order_id", "in", self.ids),
+                ("state", "in", ["pending", "error"]),
+            ]
+        )
+        entries.write({"state": "cancelled"})
+        return result
 
     def _arc_fortnox_invoice_rows(self, mapping):
         """Build the Fortnox invoice rows from the order lines.

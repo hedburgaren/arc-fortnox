@@ -2,6 +2,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from odoo import fields
+from odoo.tools import mute_logger
 from odoo.addons.arc_fortnox.models.fortnox_client import FortnoxError
 
 from .common import ArcFortnoxF1Common
@@ -15,6 +16,9 @@ class FakeClient:
 
     def get(self, path, params=None):
         self.calls.append(("GET", path, params))
+        if path == "invoices" and not self._get_results:
+            # The draft search before every post: nothing found.
+            return {"Invoices": []}
         outcome = self._get_results.pop(0)
         if isinstance(outcome, Exception):
             raise outcome
@@ -184,7 +188,15 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         # Simulate a crash after the POST: the entry is in sending.
         entry.write({"state": "sending"})
         self.fake_client._get_results.append(
-            {"Invoices": [{"DocumentNumber": "77"}]}
+            {
+                "Invoices": [
+                    {
+                        "DocumentNumber": "77",
+                        "ExternalInvoiceReference1": order.name,
+                        "Cancelled": False,
+                    }
+                ]
+            }
         )
 
         def forbidden_push(self, client):
@@ -198,15 +210,13 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         self.assertEqual(order.arc_fortnox_invoice_number, "77")
         self.assertEqual(
             self.fake_client.calls,
-            [("GET", "invoices", {"yourordernumber": order.name})],
+            [("GET", "invoices", {"externalinvoicereference1": order.name})],
         )
 
     def test_sending_entry_without_hit_posts_once(self):
         self._patch_client()
         order, entry = self._enqueue()
         entry.write({"state": "sending"})
-        self.fake_client._get_results.append({"Invoices": []})
-
         with patch.object(
             type(order), "_arc_fortnox_push_draft", lambda self, client: "55"
         ):
@@ -220,7 +230,7 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         self.assertEqual(len(self.fake_client.calls), 1)
         self.assertEqual(self.fake_client.calls[0][0], "GET")
         self.assertEqual(
-            self.fake_client.calls[0][2], {"yourordernumber": order.name}
+            self.fake_client.calls[0][2], {"externalinvoicereference1": order.name}
         )
 
     def test_done_and_cancelled_entries_are_skipped(self):
@@ -230,3 +240,140 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         self._run_cron()
         self.assertEqual(entry.state, "cancelled")
         self.assertEqual(self.fake_client.calls, [])
+
+    def _draft_hit(self, order, number, cancelled=False, reference=None):
+        return {
+            "DocumentNumber": number,
+            "ExternalInvoiceReference1": order.name if reference is None else reference,
+            "Cancelled": cancelled,
+        }
+
+    def test_timeout_after_post_adopts_instead_of_posting_again(self):
+        # Audit P1: Fortnox accepted the draft but the answer timed out.
+        self._patch_client()
+        order, entry = self._enqueue()
+        posts = []
+
+        def push_times_out(self, client):
+            posts.append(self.id)
+            raise FortnoxError("timeout", code="timeout")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", push_times_out):
+            self._run_cron()
+        self.assertEqual(entry.state, "pending")
+        entry.write({"next_attempt": fields.Datetime.now() - timedelta(minutes=1)})
+        self.fake_client._get_results.append(
+            {"Invoices": [self._draft_hit(order, "88")]}
+        )
+        with patch.object(type(order), "_arc_fortnox_push_draft", push_times_out):
+            self._run_cron()
+        self.assertEqual(len(posts), 1, "The retry must adopt, not post again.")
+        self.assertEqual(entry.state, "done")
+        self.assertEqual(order.arc_fortnox_invoice_number, "88")
+
+    def test_hook_failure_after_post_does_not_retry(self):
+        # Audit P2: the companion hook breaks after the draft exists.
+        self._patch_client()
+        order, entry = self._enqueue()
+
+        def broken_hook(self):
+            raise RuntimeError("companion hook broke")
+
+        with patch.object(
+            type(order), "_arc_fortnox_push_draft", lambda self, client: "12"
+        ), patch.object(
+            type(order), "_arc_fortnox_invoice_created", broken_hook
+        ), mute_logger("odoo.addons.arc_fortnox.models.arc_fortnox_queue"):
+            self._run_cron()
+        self.assertEqual(entry.state, "done")
+        self.assertEqual(order.arc_fortnox_invoice_number, "12")
+        self.assertIn(
+            "Fortnox follow up failed", order.activity_ids.mapped("summary")
+        )
+
+    def test_cancelled_fortnox_invoice_is_not_adopted(self):
+        # Audit P3: an old, cancelled draft carries the same reference.
+        self._patch_client()
+        order, entry = self._enqueue()
+        entry.write({"state": "sending"})
+        self.fake_client._get_results.append(
+            {"Invoices": [self._draft_hit(order, "5", cancelled=True)]}
+        )
+        with patch.object(
+            type(order), "_arc_fortnox_push_draft", lambda self, client: "6"
+        ):
+            self._run_cron()
+        self.assertEqual(order.arc_fortnox_invoice_number, "6")
+
+    def test_reference_must_match_exactly(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        self.fake_client._get_results.append(
+            {"Invoices": [self._draft_hit(order, "5", reference=order.name + "-X")]}
+        )
+        with patch.object(
+            type(order), "_arc_fortnox_push_draft", lambda self, client: "6"
+        ):
+            self._run_cron()
+        self.assertEqual(order.arc_fortnox_invoice_number, "6")
+
+    def test_two_live_drafts_stop_without_posting(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        self.fake_client._get_results.append(
+            {"Invoices": [self._draft_hit(order, "5"), self._draft_hit(order, "7")]}
+        )
+
+        def forbidden_push(self, client):
+            raise AssertionError("No POST when the reference is ambiguous.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(entry.error_code, "invoice_reference_ambiguous")
+        self.assertFalse(order.arc_fortnox_invoice_number)
+
+    def test_listed_invoice_without_reference_is_read_in_full(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        self.fake_client._get_results.extend(
+            [
+                {"Invoices": [{"DocumentNumber": "9"}]},
+                {"Invoice": self._draft_hit(order, "9")},
+            ]
+        )
+        self._run_cron()
+        self.assertEqual(order.arc_fortnox_invoice_number, "9")
+        self.assertEqual(self.fake_client.calls[1][1], "invoices/9")
+
+    def test_order_cancelled_after_enqueue_is_not_sent(self):
+        # Audit D-14.
+        self._patch_client()
+        order, entry = self._enqueue()
+        entry.write({"state": "sending"})
+        order._action_cancel()
+        self.assertEqual(order.state, "cancel")
+
+        def forbidden_push(self, client):
+            raise AssertionError("A cancelled order is never sent.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(entry.state, "cancelled")
+        self.assertEqual(self.fake_client.calls, [])
+
+    def test_cancelling_the_order_cancels_pending_entries(self):
+        order, entry = self._enqueue()
+        order._action_cancel()
+        self.assertEqual(entry.state, "cancelled")
+
+    def test_order_with_number_is_not_sent_again(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        order.sudo().write({"arc_fortnox_invoice_number": "3"})
+
+        def forbidden_push(self, client):
+            raise AssertionError("An order with a Fortnox number is never sent again.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(entry.state, "cancelled")
