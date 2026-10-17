@@ -358,6 +358,68 @@ class TestQueueProcessing(ArcFortnoxF1Common):
         self.assertEqual(entry.error_code, "invoice_reference_ambiguous")
         self.assertFalse(order.arc_fortnox_invoice_number)
 
+    def test_hit_on_another_customer_number_stops_without_posting(self):
+        # Audit D-13 (verifier probe D13d): the right reference on another
+        # customer's invoice is neither adopted nor answered with a new draft.
+        self._patch_client()
+        order, entry = self._enqueue()
+        order.partner_invoice_id.commercial_partner_id.arc_fortnox_customer_number = "42"
+        hit = dict(self._draft_hit(order, "5"), CustomerNumber="999")
+        self.fake_client._get_results.append({"Invoices": [hit]})
+
+        def forbidden_push(self, client):
+            raise AssertionError("No POST when the hit belongs to another customer.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(entry.error_code, "invoice_reference_other_customer")
+        self.assertFalse(order.arc_fortnox_invoice_number)
+
+    def test_hit_on_the_same_customer_number_is_adopted(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        order.partner_invoice_id.commercial_partner_id.arc_fortnox_customer_number = "42"
+        hit = dict(self._draft_hit(order, "5"), CustomerNumber="42")
+        self.fake_client._get_results.append({"Invoices": [hit]})
+
+        def forbidden_push(self, client):
+            raise AssertionError("An exact hit on the same customer is adopted.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(order.arc_fortnox_invoice_number, "5")
+
+    def test_hit_on_another_customer_number_stops_without_posting(self):
+        # Audit D-13 (verifier probe D13d): the right reference on another
+        # customer's invoice is neither adopted nor answered with a new draft.
+        self._patch_client()
+        order, entry = self._enqueue()
+        order.partner_invoice_id.commercial_partner_id.arc_fortnox_customer_number = "42"
+        hit = dict(self._draft_hit(order, "5"), CustomerNumber="999")
+        self.fake_client._get_results.append({"Invoices": [hit]})
+
+        def forbidden_push(self, client):
+            raise AssertionError("No POST when the hit belongs to another customer.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(entry.error_code, "invoice_reference_other_customer")
+        self.assertFalse(order.arc_fortnox_invoice_number)
+
+    def test_hit_on_the_same_customer_number_is_adopted(self):
+        self._patch_client()
+        order, entry = self._enqueue()
+        order.partner_invoice_id.commercial_partner_id.arc_fortnox_customer_number = "42"
+        hit = dict(self._draft_hit(order, "5"), CustomerNumber="42")
+        self.fake_client._get_results.append({"Invoices": [hit]})
+
+        def forbidden_push(self, client):
+            raise AssertionError("An exact hit on the same customer is adopted.")
+
+        with patch.object(type(order), "_arc_fortnox_push_draft", forbidden_push):
+            self._run_cron()
+        self.assertEqual(order.arc_fortnox_invoice_number, "5")
+
     def test_listed_invoice_without_reference_is_read_in_full(self):
         self._patch_client()
         order, entry = self._enqueue()

@@ -134,6 +134,16 @@ class SaleOrder(models.Model):
         found = client.get(
             "invoices", params={"externalinvoicereference1": self.name}
         )
+        # Audit D-13 (the verifier's gap): a live hit with the right
+        # reference but another customer's number is somebody else's invoice
+        # that happens to carry this order name. It is neither adopted nor
+        # answered with a second draft; the entry stops for a human. Checked
+        # only when both numbers are known: before the customer step has run
+        # the partner may have none yet.
+        expected = (
+            self.partner_invoice_id.commercial_partner_id.arc_fortnox_customer_number
+            or ""
+        )
         matches = []
         for listed in (found or {}).get("Invoices") or []:
             number = str(listed.get("DocumentNumber") or "")
@@ -147,6 +157,20 @@ class SaleOrder(models.Model):
                 continue
             if (invoice.get("ExternalInvoiceReference1") or "") != self.name:
                 continue
+            customer = str(invoice.get("CustomerNumber") or "")
+            if expected and customer and customer != expected:
+                raise FortnoxError(
+                    _(
+                        "Fortnox invoice %(number)s carries the reference %(ref)s "
+                        "but belongs to customer %(other)s, not %(expected)s. "
+                        "Check the invoice in Fortnox, then retry.",
+                        number=number,
+                        ref=self.name,
+                        other=customer,
+                        expected=expected,
+                    ),
+                    code="invoice_reference_other_customer",
+                )
             matches.append(number)
         if len(matches) > 1:
             raise FortnoxError(
