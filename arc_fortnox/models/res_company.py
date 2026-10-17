@@ -18,6 +18,7 @@ TRIGGER_MODES = [
 
 CLIENT_ID_PARAM_NAMES = ("arc_fortnox.client_id", "arc_fortnox_client_id")
 CLIENT_SECRET_PARAM_NAMES = ("arc_fortnox.client_secret", "arc_fortnox_client_secret")
+REDIRECT_URI_PARAM = "arc_fortnox.redirect_uri"
 
 
 class ResCompany(models.Model):
@@ -255,14 +256,19 @@ class ResCompany(models.Model):
         return FortnoxClient(self, credential)
 
     def _arc_fortnox_redirect_uri(self):
-        """The fixed OAuth redirect URI for this installation."""
+        """The fixed OAuth redirect URI for this installation.
+
+        The parameter arc_fortnox.redirect_uri wins when set. Otherwise the
+        URI derives from web.base.url, which Odoo rewrites when an
+        administrator logs in unless web.base.url.freeze is set; a changed
+        value no longer matches the app registration at Fortnox.
+        """
         self.ensure_one()
-        base = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("web.base.url", "")
-            .rstrip("/")
-        )
+        parameters = self.env["ir.config_parameter"].sudo()
+        fixed = (parameters.get_param(REDIRECT_URI_PARAM) or "").strip()
+        if fixed:
+            return fixed
+        base = parameters.get_param("web.base.url", "").rstrip("/")
         return f"{base}/arc_fortnox/callback"
 
     def arc_fortnox_authorize_url(self):
@@ -291,6 +297,8 @@ class ResCompany(models.Model):
                 "redirect_uri": self._arc_fortnox_redirect_uri(),
                 "scope": AUTHORIZE_SCOPE,
                 "state": nonce,
+                "response_type": "code",
+                "access_type": "offline",
                 "account_type": "service",
             }
         )

@@ -27,7 +27,7 @@ class TestOAuthFlow(ArcFortnoxF1Common):
         self.token_calls = []
         self.token_results = []
 
-        def fake_token_request(company, data):
+        def fake_token_request(company, data, client_id, client_secret):
             self.token_calls.append((company.id, dict(data)))
             outcome = self.token_results.pop(0)
             if isinstance(outcome, Exception):
@@ -56,6 +56,8 @@ class TestOAuthFlow(ArcFortnoxF1Common):
         self.assertIn("client_id=test-client-id", url)
         self.assertIn("account_type=service", url)
         self.assertIn("scope=invoice+customer", url)
+        self.assertIn("response_type=code", url)
+        self.assertIn("access_type=offline", url)
         self.credential.invalidate_recordset()
         self.assertTrue(self.credential.state_nonce)
         self.assertIn(self.credential.state_nonce, url)
@@ -81,6 +83,24 @@ class TestOAuthFlow(ArcFortnoxF1Common):
         self.assertFalse(self.credential.state_nonce)
         self.assertEqual(self.token_calls[0][1]["grant_type"], "authorization_code")
         self.assertEqual(self.token_calls[0][1]["code"], "auth-code")
+        # Client credentials travel in the Basic header, never in the body.
+        self.assertNotIn("client_secret", self.token_calls[0][1])
+        self.assertNotIn("client_id", self.token_calls[0][1])
+
+    def test_redirect_uri_parameter_wins_over_base_url(self):
+        parameters = self.env["ir.config_parameter"].sudo()
+        parameters.set_param("web.base.url", "http://drifted.example")
+        self.assertEqual(
+            self.company._arc_fortnox_redirect_uri(),
+            "http://drifted.example/arc_fortnox/callback",
+        )
+        parameters.set_param(
+            "arc_fortnox.redirect_uri", "https://odoo.example/arc_fortnox/callback"
+        )
+        self.assertEqual(
+            self.company._arc_fortnox_redirect_uri(),
+            "https://odoo.example/arc_fortnox/callback",
+        )
 
     def test_callback_rejects_wrong_state(self):
         self.company.arc_fortnox_authorize_url()
@@ -148,7 +168,7 @@ class TestTokenRefresh(ArcFortnoxF1Common):
         self.token_calls = []
         self.token_results = []
 
-        def fake_token_request(company, data):
+        def fake_token_request(company, data, client_id, client_secret):
             self.token_calls.append((company.id, dict(data)))
             outcome = self.token_results.pop(0)
             if isinstance(outcome, Exception):
@@ -219,7 +239,7 @@ class TestTokenRefresh(ArcFortnoxF1Common):
         token_patcher = patch.object(
             credential_module,
             "token_request",
-            lambda company, data: {
+            lambda company, data, client_id, client_secret: {
                 "access_token": "access-new",
                 "refresh_token": "refresh-new",
                 "expires_in": 3600,
@@ -318,3 +338,37 @@ class TestExpiryWarning(ArcFortnoxF1Common):
         ):
             self.env["arc.fortnox.credential"]._arc_fortnox_cron_warn_expiry()
         self.assertFalse(sent)
+
+    def test_refresh_rearms_the_expiry_warning(self):
+        credential = self._authorized_credential(40)
+        credential.write({"expiry_warned_at": fields.Datetime.now()})
+        credential._arc_fortnox_store_tokens(
+            {"access_token": "a2", "refresh_token": "r2", "expires_in": 3600}
+        )
+        self.assertFalse(credential.expiry_warned_at)
+
+
+class TestTokenEndpointRequest(ArcFortnoxF1Common):
+    def test_basic_authentication_and_grant_only_body(self):
+        from odoo.addons.arc_fortnox.models import fortnox_client
+
+        captured = {}
+
+        def fake_post(url, data=None, headers=None, timeout=None):
+            captured.update(url=url, data=dict(data), headers=dict(headers))
+            return FakeResponse(200, {"access_token": "a", "refresh_token": "r"})
+
+        with patch.object(fortnox_client.requests, "post", fake_post):
+            fortnox_client.token_request(
+                self.company,
+                {"grant_type": "refresh_token", "refresh_token": "r0"},
+                "the-id",
+                "the-secret",
+            )
+        self.assertEqual(
+            captured["headers"]["Authorization"],
+            "Basic dGhlLWlkOnRoZS1zZWNyZXQ=",
+        )
+        self.assertEqual(
+            captured["data"], {"grant_type": "refresh_token", "refresh_token": "r0"}
+        )

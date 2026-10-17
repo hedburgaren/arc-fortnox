@@ -8,6 +8,7 @@ Security policy for logging: request path, HTTP status and the Fortnox error
 code only. Never payloads, response bodies, customer data or tokens.
 """
 
+import base64
 import logging
 import threading
 import time
@@ -75,18 +76,23 @@ class SlidingWindowThrottle:
             self._sleep(wait_time)
 
 
-def token_request(company, data):
+def token_request(company, data, client_id, client_secret):
     """Exchange a code or refresh a token at the Fortnox OAuth endpoint.
 
-    Returns the parsed JSON body. Failures raise FortnoxAuthError; the
-    description from Fortnox is passed through but nothing else is logged
-    or stored: no codes, no tokens.
+    The client authenticates with HTTP Basic, as Fortnox documents it; the
+    body carries only the grant. Returns the parsed JSON body. Failures
+    raise FortnoxAuthError; the description from Fortnox is passed through
+    but nothing else is logged or stored: no codes, no tokens.
     """
+    credentials = base64.b64encode(
+        f"{client_id}:{client_secret}".encode("utf-8")
+    ).decode("ascii")
     try:
         response = requests.post(
             OAUTH_TOKEN_URL,
             data=data,
             headers={
+                "Authorization": f"Basic {credentials}",
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Accept": "application/json",
             },

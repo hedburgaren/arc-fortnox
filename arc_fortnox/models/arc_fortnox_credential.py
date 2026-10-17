@@ -153,6 +153,7 @@ class ArcFortnoxCredential(models.Model):
                 "last_refresh_at": now,
                 "scope": response.get("scope") or self.scope or AUTHORIZE_SCOPE,
                 "last_error": False,
+                "expiry_warned_at": False,
             }
         )
 
@@ -182,10 +183,9 @@ class ArcFortnoxCredential(models.Model):
             {
                 "grant_type": "refresh_token",
                 "refresh_token": current.refresh_token,
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "scope": AUTHORIZE_SCOPE,
             },
+            client_id,
+            client_secret,
         )
         current._arc_fortnox_store_tokens(response)
 
@@ -229,11 +229,10 @@ class ArcFortnoxCredential(models.Model):
             {
                 "grant_type": "authorization_code",
                 "code": code,
-                "client_id": client_id,
-                "client_secret": client_secret,
                 "redirect_uri": company._arc_fortnox_redirect_uri(),
-                "scope": AUTHORIZE_SCOPE,
             },
+            client_id,
+            client_secret,
         )
         match._arc_fortnox_store_tokens(response)
         return match
