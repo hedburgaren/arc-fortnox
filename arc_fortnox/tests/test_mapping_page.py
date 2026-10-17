@@ -201,3 +201,25 @@ class TestMappingPage(ArcFortnoxF1Common):
         with self.assertRaises(UserError):
             rows["1001"].with_user(self.invoicer).write({"name": "Ändrat namn"})
         self.assertEqual(rows["1001"].name, "Plasttillverkarna Linköping AB")
+
+    def test_private_customer_from_the_api_and_unknown_types_search_both_pools(self):
+        person = self.env["res.partner"].create({"name": "Bertil Berg", "is_company": False})
+        row = self.records._arc_fortnox_row_from_api(
+            "customer", {"CustomerNumber": "2002", "Name": "Bertil Bergh", "Type": "PRIVATE"}
+        )
+        self.assertEqual(row["customer_type"], "PRIVATE")
+        rows = self.records._arc_fortnox_upsert(self.env.company, "customer", [row])
+        self.assertEqual(rows.suggested_partner_id, person)
+        untyped = self.records._arc_fortnox_upsert(
+            self.env.company, "customer",
+            [{"fortnox_number": "2003", "name": "Bertil Bergh"}],
+        )
+        self.assertEqual(untyped.suggested_partner_id, person)
+
+    def test_contact_person_under_a_company_cannot_be_linked(self):
+        contact = self.env["res.partner"].create(
+            {"name": "Kontakt Person", "parent_id": self.plast.id}
+        )
+        rows = self._import(CUSTOMER_EXPORT)
+        with self.assertRaises(UserError):
+            rows["1003"].with_user(self.invoicer).write({"partner_id": contact.id})

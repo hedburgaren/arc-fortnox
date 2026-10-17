@@ -1682,3 +1682,9 @@ msgstr "liknande namn"
 #: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
 msgid "The Fortnox fields are a copy of Fortnox and cannot be edited here."
 msgstr "Fortnox-fälten är en kopia av Fortnox och kan inte ändras här."
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Link the company or the private person, not a contact person under a company."
+msgstr "Koppla företaget eller privatpersonen, inte en kontaktperson under ett företag."
