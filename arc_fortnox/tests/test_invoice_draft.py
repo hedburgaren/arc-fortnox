@@ -296,3 +296,90 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
     def test_disconnect_requires_a_number(self):
         with self.assertRaises(UserError):
             self.order.with_user(self.invoicer).action_arc_fortnox_disconnect()
+
+    def test_excluded_tax_sets_vat_included_false(self):
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertIs(self._post_payload()["VATIncluded"], False)
+
+    def test_included_tax_sets_vat_included(self):
+        # Audit P6: a price including VAT must not be sent as a net price.
+        vat_incl = self.env["account.tax"].create(
+            {
+                "name": "VAT 25% incl",
+                "amount": 25.0,
+                "amount_type": "percent",
+                "type_tax_use": "sale",
+                "price_include_override": "tax_included",
+            }
+        )
+        self.order.order_line[0].write(
+            {"tax_id": [(6, 0, [vat_incl.id])], "price_unit": 125.0}
+        )
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        payload = self._post_payload()
+        self.assertIs(payload["VATIncluded"], True)
+        self.assertEqual(payload["InvoiceRows"][0]["Price"], 125.0)
+        self.assertEqual(payload["InvoiceRows"][0]["VAT"], 25.0)
+
+    def test_mixed_included_and_excluded_taxes_stop(self):
+        vat_incl = self.env["account.tax"].create(
+            {
+                "name": "VAT 12% incl",
+                "amount": 12.0,
+                "amount_type": "percent",
+                "type_tax_use": "sale",
+                "price_include_override": "tax_included",
+            }
+        )
+        self.order.write(
+            {
+                "order_line": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": 1.0,
+                            "price_unit": 10.0,
+                            "tax_id": [(6, 0, [vat_incl.id])],
+                        },
+                    )
+                ]
+            }
+        )
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "vat_included_mixed")
+        self.assertFalse([c for c in self.fake_client.calls if c[0] == "POST"])
+
+    def test_untaxed_line_under_swedish_vat_stops(self):
+        # Audit P5: no tax must never mean "let Fortnox pick a rate".
+        self.order.order_line[0].tax_id = [(5, 0, 0)]
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "line_tax_missing")
+        self.assertFalse([c for c in self.fake_client.calls if c[0] == "POST"])
+
+    def test_untaxed_line_outside_swedish_vat_sends_zero(self):
+        self.mapping.vat_type = "EXPORT"
+        self.fake_client._get_results[0]["Customer"]["VATType"] = "EXPORT"
+        self.order.order_line[0].tax_id = [(5, 0, 0)]
+        self._invoice_post_result()
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(self._post_payload()["InvoiceRows"][0]["VAT"], 0)
+
+    def test_fixed_amount_tax_stops(self):
+        fixed = self.env["account.tax"].create(
+            {
+                "name": "Fee",
+                "amount": 5.0,
+                "amount_type": "fixed",
+                "type_tax_use": "sale",
+            }
+        )
+        self.order.order_line[0].tax_id = [(6, 0, [fixed.id])]
+        with self.assertRaises(FortnoxError) as context:
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(context.exception.error_code, "line_tax_not_percent")

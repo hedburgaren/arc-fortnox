@@ -93,6 +93,7 @@ class SaleOrder(models.Model):
                 "Currency": self.currency_id.name,
                 "TermsOfPayment": self._arc_fortnox_payment_term_code(),
                 "ExternalInvoiceReference1": self.name,
+                "VATIncluded": self._arc_fortnox_vat_included(),
                 "InvoiceRows": self._arc_fortnox_invoice_rows(mapping),
             }
             if self.client_order_ref:
@@ -217,6 +218,61 @@ class SaleOrder(models.Model):
                 )
         return rows
 
+    def _arc_fortnox_vat_included(self):
+        """Whether the row prices include VAT, for the invoice header.
+
+        Odoo prices follow the tax: a price included tax means price_unit
+        carries the VAT. Fortnox has one switch per invoice, so an order
+        that mixes included and excluded taxes stops before any request.
+        """
+        self.ensure_one()
+        taxes = self.order_line.filtered(lambda line: not line.display_type).tax_id
+        included = set(taxes.mapped("price_include"))
+        if len(included) > 1:
+            raise FortnoxError(
+                _(
+                    "Order %s mixes taxes that include VAT in the price with "
+                    "taxes that do not. Fortnox takes one setting per invoice.",
+                    self.name,
+                ),
+                code="vat_included_mixed",
+            )
+        return bool(included and included.pop())
+
+    def _arc_fortnox_line_vat(self, line, mapping):
+        """The VAT rate for a row, always explicit.
+
+        A row without a VAT rate takes whatever Fortnox defaults to for the
+        account, which is how a VAT free line ends up with 25 percent. So
+        every row carries its rate: the line's percent tax, or 0 for an
+        untaxed line on an order whose VAT type is not Swedish VAT. An
+        untaxed line under Swedish VAT, or a tax that is not a plain
+        percentage, stops the push.
+        """
+        tax = line.tax_id
+        if not tax:
+            if mapping.vat_type == "SEVAT":
+                raise FortnoxError(
+                    _(
+                        "Order line %s has no tax, but the order is under "
+                        "Swedish VAT. Set the tax on the line, 0 percent if "
+                        "the line is exempt.",
+                        line.name or line.id,
+                    ),
+                    code="line_tax_missing",
+                )
+            return 0
+        if tax.amount_type != "percent":
+            raise FortnoxError(
+                _(
+                    "Order line %s has a tax that is not a plain percentage. "
+                    "Fortnox rows carry a VAT rate in percent.",
+                    line.name or line.id,
+                ),
+                code="line_tax_not_percent",
+            )
+        return tax.amount
+
     def _arc_fortnox_line_values(self, line, mapping):
         """Default invoice row payload for one order line. Override to adapt.
 
@@ -233,8 +289,7 @@ class SaleOrder(models.Model):
         }
         if line.discount:
             row["Discount"] = line.discount
-        if line.tax_id:
-            row["VAT"] = line.tax_id[0].amount
+        row["VAT"] = self._arc_fortnox_line_vat(line, mapping)
         if self.company_id.sudo().arc_fortnox_send_article_numbers:
             article = line.product_id.arc_fortnox_article
             if article:
