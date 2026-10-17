@@ -220,7 +220,34 @@ class TestTokenRefresh(ArcFortnoxF1Common):
         self.credential.invalidate_recordset()
         self.assertEqual(self.credential.access_token, "access-2")
 
-    def test_refresh_without_refresh_token_raises(self):
+    def test_refresh_commits_through_its_own_cursor(self):
+        # The rotated pair must survive a rollback of the caller, so the
+        # write happens on a cursor other than the caller's.
+        self.token_results.append(
+            {"access_token": "access-2", "refresh_token": "refresh-2", "expires_in": 3600}
+        )
+        cursors = []
+        original = type(self.credential)._arc_fortnox_store_tokens
+
+        def spy(record, response):
+            cursors.append(record.env.cr)
+            return original(record, response)
+
+        with patch.object(type(self.credential), "_arc_fortnox_store_tokens", spy):
+            token = self.credential._arc_fortnox_refresh_tokens()
+        self.assertEqual(token, "access-2")
+        self.assertEqual(len(cursors), 1)
+        self.assertIsNot(cursors[0], self.env.cr)
+
+    def test_refresh_skipped_when_another_process_refreshed(self):
+        # The row already carries a newer access token than the rejected one.
+        token = self.credential._arc_fortnox_refresh_tokens(
+            rejected_token="access-from-an-older-read"
+        )
+        self.assertEqual(token, "access-old")
+        self.assertEqual(self.token_calls, [], "No refresh token may be spent.")
+
+
         self.credential.write({"refresh_token": False})
         with self.assertRaises(FortnoxAuthError):
             self.credential._arc_fortnox_refresh_tokens()

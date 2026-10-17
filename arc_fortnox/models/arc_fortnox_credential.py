@@ -2,7 +2,10 @@ import hmac
 import logging
 from datetime import timedelta
 
+from psycopg2 import errors as pg_errors
+
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
 from .fortnox_client import FortnoxAuthError, token_request
@@ -95,19 +98,21 @@ class ArcFortnoxCredential(models.Model):
             credential = self.create({"company_id": company.id})
         return credential
 
-    def _arc_fortnox_on_unauthorized(self):
+    def _arc_fortnox_on_unauthorized(self, rejected_token=None):
         """Called by the API client when Fortnox rejects the access token.
 
-        Tries a token refresh first; returns True when a new access token
-        is in place so the client can retry the request once. Returns False
-        when there is nothing to refresh with, leaving the credential in
-        not authorized so a new authorization is clearly required.
+        Tries a token refresh first and returns the new access token, so the
+        client can retry the request once with it. Returns False when there
+        is nothing to refresh with or the refresh fails; the credential then
+        shows not authorized or error, committed at once like the refresh
+        itself, so the state survives whatever the calling transaction does.
         """
         self.ensure_one()
-        current = self.sudo()
-        if not current.refresh_token:
-            current.write(
-                {
+        try:
+            return self._arc_fortnox_refresh_tokens(rejected_token=rejected_token)
+        except FortnoxAuthError as error:
+            if error.error_code == "not_authorized":
+                values = {
                     "state": "not_authorized",
                     "access_token": False,
                     "refresh_token": False,
@@ -115,18 +120,13 @@ class ArcFortnoxCredential(models.Model):
                     "last_error": "Fortnox rejected the access token and "
                     "there is no refresh token.",
                 }
-            )
-            return False
-        try:
-            current._arc_fortnox_refresh_tokens()
-            return True
-        except FortnoxAuthError as error:
-            current.write(
-                {
-                    "state": "error",
-                    "last_error": error.error_text,
-                }
-            )
+            else:
+                values = {"state": "error", "last_error": error.error_text}
+            with self.env.registry.cursor() as cr:
+                side = self.with_env(self.env(cr=cr, su=True))
+                side.write(values)
+                side.env.flush_all()
+            self.invalidate_recordset()
             return False
 
     def _arc_fortnox_store_tokens(self, response):
@@ -157,37 +157,75 @@ class ArcFortnoxCredential(models.Model):
             }
         )
 
-    def _arc_fortnox_refresh_tokens(self):
-        """Refresh the tokens, with rotation, under a row lock.
+    def _arc_fortnox_refresh_tokens(self, rejected_token=None):
+        """Refresh the tokens, with rotation, in a transaction of their own.
 
-        The SELECT FOR UPDATE serializes a cron and a user action, so the
-        rotating refresh token can never be burned by two concurrent
-        refreshes. Once the lock is held the refresh token is re-read so
-        the request carries the latest rotated value.
+        Fortnox invalidates the old refresh token the moment it issues a
+        new one, so the new pair must be committed even when the calling
+        transaction later rolls back (a UserError, a retried request, a
+        failed queue entry). The refresh therefore runs on its own cursor
+        and commits before it returns.
+
+        On that cursor SELECT FOR UPDATE serializes the cron and a user
+        action. When the access token in the row already differs from the
+        one Fortnox rejected, another process refreshed meanwhile and its
+        token is returned without spending the refresh token again. A
+        serialization failure means exactly that race, and the read is
+        retried on a fresh cursor.
+
+        Returns the access token to use. The calling transaction may still
+        see the old row in its own snapshot, so callers use the returned
+        value instead of reading the record again.
         """
         self.ensure_one()
-        self.env.cr.execute(
-            "SELECT id FROM arc_fortnox_credential WHERE id = %s FOR UPDATE",
+        # Pending writes of the caller go to the database first; the
+        # refresh cursor reads the row with plain SQL.
+        self.env.flush_all()
+        for attempt in range(3):
+            try:
+                with self.env.registry.cursor() as cr:
+                    return self._arc_fortnox_refresh_locked(cr, rejected_token)
+            except pg_errors.SerializationFailure:
+                if attempt == 2:
+                    raise
+        return False
+
+    def _arc_fortnox_refresh_locked(self, cr, rejected_token):
+        cr.execute(
+            "SELECT access_token, refresh_token FROM arc_fortnox_credential "
+            "WHERE id = %s FOR UPDATE",
             [self.id],
         )
-        current = self.sudo()
-        if not current.refresh_token:
+        row = cr.fetchone()
+        access_token, refresh_token = row if row else (None, None)
+        if not refresh_token:
             raise FortnoxAuthError(
                 _("The Fortnox connection is not authorized."),
                 code="not_authorized",
             )
+        if rejected_token and access_token and access_token != rejected_token:
+            return access_token
+        current = self.with_env(self.env(cr=cr, su=True))
         company = current.company_id
-        client_id, client_secret = company.arc_fortnox_client_credentials()
+        try:
+            client_id, client_secret = company.arc_fortnox_client_credentials()
+        except UserError as error:
+            raise FortnoxAuthError(
+                str(error), code="client_credentials_missing"
+            ) from error
         response = token_request(
             company,
             {
                 "grant_type": "refresh_token",
-                "refresh_token": current.refresh_token,
+                "refresh_token": refresh_token,
             },
             client_id,
             client_secret,
         )
         current._arc_fortnox_store_tokens(response)
+        current.env.flush_all()
+        self.invalidate_recordset()
+        return response["access_token"]
 
     @api.model
     def _arc_fortnox_handle_callback(self, state, code, error):

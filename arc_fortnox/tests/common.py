@@ -7,6 +7,11 @@ class ArcFortnoxF1Common(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # Token refreshes run on a cursor of their own. In test mode the
+        # registry hands out cursors on top of the test transaction, so
+        # nothing a test does is ever committed for real.
+        cls.registry.enter_test_mode(cls.cr)
+        cls.addClassCleanup(cls.registry.leave_test_mode)
         cls.company = cls.env.company
         cls.group_invoicer = cls.env.ref("arc_fortnox.group_invoicer")
         cls.group_user = cls.env.ref("base.group_user")

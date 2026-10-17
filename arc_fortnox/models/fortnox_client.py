@@ -132,6 +132,7 @@ class FortnoxClient:
     def __init__(self, company, credential, clock=time.monotonic, sleep=time.sleep):
         self._company = company
         self._credential = credential
+        self._fresh_token = None
         self._throttle = SlidingWindowThrottle(
             max_calls=company.arc_fortnox_throttle_calls,
             period=company.arc_fortnox_throttle_seconds,
@@ -142,7 +143,9 @@ class FortnoxClient:
 
     @property
     def _access_token(self):
-        return self._credential.sudo().access_token
+        # A token refreshed during this client's life is kept here: the
+        # calling transaction may not see the committed refresh yet.
+        return self._fresh_token or self._credential.sudo().access_token
 
     def _request_raw(self, method, url, headers, payload, params):
         return requests.request(
@@ -187,7 +190,11 @@ class FortnoxClient:
             # Expired access token: a refresh may fix it, so retry exactly
             # once with the new token. Without a refresh token the
             # credential goes back to not authorized and the error stands.
-            if self._credential.sudo()._arc_fortnox_on_unauthorized():
+            fresh = self._credential.sudo()._arc_fortnox_on_unauthorized(
+                rejected_token=token
+            )
+            if fresh:
+                self._fresh_token = fresh
                 return self.request(
                     method, path, payload=payload, params=params, _retried=True
                 )
