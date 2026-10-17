@@ -74,6 +74,16 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Fortnox: Freight Products",
     )
+    arc_fortnox_truth_customer = fields.Selection(
+        related="company_id.arc_fortnox_truth_customer",
+        readonly=False,
+        string="Fortnox: Customers Are Right In",
+    )
+    arc_fortnox_truth_article = fields.Selection(
+        related="company_id.arc_fortnox_truth_article",
+        readonly=False,
+        string="Fortnox: Products Are Right In",
+    )
     arc_fortnox_terms_source = fields.Selection(
         related="company_id.arc_fortnox_terms_source",
         readonly=False,

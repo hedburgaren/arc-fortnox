@@ -5,3 +5,6 @@ access_arc_fortnox_queue_system,arc.fortnox.queue system,model_arc_fortnox_queue
 access_arc_fortnox_vat_mapping_invoicer,arc.fortnox.vat.mapping invoicer,model_arc_fortnox_vat_mapping,group_invoicer,1,0,0,0
 access_arc_fortnox_vat_mapping_system,arc.fortnox.vat.mapping system,model_arc_fortnox_vat_mapping,base.group_system,1,1,1,1
 access_arc_fortnox_enqueue_confirm_invoicer,arc.fortnox.enqueue.confirm invoicer,model_arc_fortnox_enqueue_confirm,group_invoicer,1,1,1,0
+access_arc_fortnox_record_invoicer,arc.fortnox.record invoicer,model_arc_fortnox_record,group_invoicer,1,1,0,0
+access_arc_fortnox_record_system,arc.fortnox.record system,model_arc_fortnox_record,base.group_system,1,1,1,1
+access_arc_fortnox_record_import_system,arc.fortnox.record.import system,model_arc_fortnox_record_import,base.group_system,1,1,1,0

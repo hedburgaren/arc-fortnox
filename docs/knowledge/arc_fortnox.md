@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.4.1.
+public repository. Version 18.0.1.5.0.
 
 ## Key models
 
@@ -64,8 +64,30 @@ public repository. Version 18.0.1.4.1.
 - `sale.order.line` (inherit): `_arc_fortnox_unit_code`,
   `_arc_fortnox_row_account` (product field beats mapping default).
 - Fields on `account.payment.term` (`arc_fortnox_code`), `uom.uom`
-  (`arc_fortnox_unit`), `product.template` (`arc_fortnox_article`,
-  `arc_fortnox_account`).
+  (`arc_fortnox_unit`), `product.product` (`arc_fortnox_article`, per
+  variant like the internal reference; the template shows it computed
+  and writable for a single variant), `product.template`
+  (`arc_fortnox_account`).
+- `arc.fortnox.record`: the mapping page. One row per Fortnox customer or
+  article (`record_type`) and company, unique on the Fortnox number; the
+  Fortnox side is read only. Loaded from the API
+  (`action_arc_fortnox_fetch`, paged with `limit` 500 and
+  `@TotalPages`, administrators) or from a Fortnox export through the
+  transient `arc.fortnox.record.import` (English and Swedish column names,
+  delimiter sniffed, file never stored). `_arc_fortnox_upsert` refreshes the
+  Fortnox side and keeps links; `_arc_fortnox_link_existing` links rows
+  whose number Odoo already carries; `_arc_fortnox_suggest` suggests a
+  partner by organisation number, then a close name (difflib, cutoff 0.85,
+  legal forms and case ignored) among companies without a number, and a
+  variant by `default_code`. Writing `partner_id` or `product_id` (invoicer
+  group) writes the number on the Odoo record, clears it on the previous
+  one, and refuses a record linked elsewhere. `difference` flags name and
+  organisation number; `action_copy_from_fortnox` corrects the Odoo
+  customer's name and Swedish organisation number when
+  `res.company.arc_fortnox_truth_customer` is `fortnox` (default;
+  `arc_fortnox_truth_article` defaults to `odoo`). Fortnox is never
+  written. Menus: Sales, Configuration, Fortnox, Map Fortnox Customers and
+  Map Fortnox Articles.
 
 ## Flows
 

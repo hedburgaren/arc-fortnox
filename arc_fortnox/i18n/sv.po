@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 18:28+0000\n"
-"PO-Revision-Date: 2026-10-17 18:28+0000\n"
+"POT-Creation-Date: 2026-10-17 20:28+0000\n"
+"PO-Revision-Date: 2026-10-17 20:28+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -15,6 +15,25 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid ""
+"%(partner)s is already linked to Fortnox customer %(other)s. Unlink that row"
+" first."
+msgstr "%(partner)s är redan kopplad till Fortnox-kund %(other)s. Koppla bort den raden först."
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "%s Fortnox records loaded"
+msgstr "%s poster från Fortnox inlästa"
+
+#. module: arc_fortnox
+#: model:ir.model.constraint,message:arc_fortnox.constraint_arc_fortnox_record_fortnox_number_uniq
+msgid "A Fortnox number appears once per type and company."
+msgstr "Ett Fortnox-nummer finns bara en gång per typ och företag."
 
 #. module: arc_fortnox
 #: model:ir.model.constraint,message:arc_fortnox.constraint_arc_fortnox_credential_company_uniq
@@ -47,12 +66,24 @@ msgid "Active Fortnox Queue Entries"
 msgstr "Aktiva poster i Fortnox-kön"
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__fortnox_active
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Active in Fortnox"
+msgstr "Aktiv i Fortnox"
+
+#. module: arc_fortnox
 #: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_vat_mapping
 msgid ""
 "An order whose fiscal position has no mapping is not pushed\n"
 "                to Fortnox. The default revenue account is used when a\n"
 "                product has no account of its own."
 msgstr "En order vars skatteposition saknar mappning skickas inte till Fortnox. Standardkontot för intäkter används när en produkt saknar eget konto."
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__record_type__article
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record_import__record_type__article
+msgid "Article"
+msgstr "Artikel"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__attempts
@@ -100,6 +131,7 @@ msgstr "Väntetid i minuter mellan försöken, och vid vilket försök en köpos
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_enqueue_confirm_form
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_queue_form
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -138,6 +170,7 @@ msgstr "Företag"
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__company_id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__company_id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__company_id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__company_id
 msgid "Company"
 msgstr "Företag"
@@ -163,9 +196,16 @@ msgid "Contact"
 msgstr "Kontakt"
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Correct Odoo from Fortnox"
+msgstr "Rätta Odoo efter Fortnox"
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__create_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_uid
 msgid "Created by"
 msgstr "Skapad av"
@@ -174,9 +214,17 @@ msgstr "Skapad av"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__create_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_date
 msgid "Created on"
 msgstr "Skapad den"
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__record_type__customer
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record_import__record_type__customer
+msgid "Customer"
+msgstr "Kund"
 
 #. module: arc_fortnox
 #. odoo-python
@@ -208,6 +256,11 @@ msgid "Default Revenue Account"
 msgstr "Standardkonto för intäkter"
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__difference
+msgid "Differs"
+msgstr "Skiljer sig"
+
+#. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_order_form_inherit_arc_fortnox
 msgid "Disconnect Fortnox Invoice"
 msgstr "Koppla bort Fortnox-fakturan"
@@ -222,6 +275,8 @@ msgstr "Bortkopplad från Fortnox-faktura %s."
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__display_name
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__display_name
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__display_name
 msgid "Display Name"
 msgstr "Visningsnamn"
@@ -283,11 +338,19 @@ msgid "Expiry Warned At"
 msgstr "Varnad om utgång"
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__file_name
+msgid "File Name"
+msgstr "Filnamn"
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__fiscal_position_id
 msgid "Fiscal Position"
 msgstr "Skatteposition"
 
 #. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__fortnox
 #: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_config
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "Fortnox"
@@ -310,6 +373,11 @@ msgstr "Fortnox väntetider mellan försök (min)"
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_calls
 msgid "Fortnox Calls Per Period"
 msgstr "Fortnox anrop per period"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__city
+msgid "Fortnox City"
+msgstr "Ort i Fortnox"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_client_id
@@ -339,6 +407,21 @@ msgstr "Fortnox-koppling"
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_users__arc_fortnox_customer_number
 msgid "Fortnox Customer Number"
 msgstr "Fortnox kundnummer"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__customer_type
+msgid "Fortnox Customer Type"
+msgstr "Kundtyp i Fortnox"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__email
+msgid "Fortnox Email"
+msgstr "E-post i Fortnox"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__file
+msgid "Fortnox Export (CSV)"
+msgstr "Export från Fortnox (CSV)"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__fortnox_invoice_number
@@ -371,6 +454,21 @@ msgid "Fortnox Max Description Length"
 msgstr "Fortnox max längd på radtext"
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__name
+msgid "Fortnox Name"
+msgstr "Namn i Fortnox"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__fortnox_number
+msgid "Fortnox Number"
+msgstr "Fortnox-nummer"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__organisation_number
+msgid "Fortnox Organisation Number"
+msgstr "Organisationsnummer i Fortnox"
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_account_payment_term__arc_fortnox_code
 msgid "Fortnox Payment Term Code"
 msgstr "Fortnox kod för betalningsvillkor"
@@ -379,6 +477,11 @@ msgstr "Fortnox kod för betalningsvillkor"
 #: model:ir.model.fields,field_description:arc_fortnox.field_sale_order__arc_fortnox_queue_ids
 msgid "Fortnox Queue Entries"
 msgstr "Poster i Fortnox-kön"
+
+#. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_arc_fortnox_record
+msgid "Fortnox Record Mapping"
+msgstr "Mappning av Fortnox-poster"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_redirect_uri
@@ -459,6 +562,12 @@ msgstr "Fortnox kontonummer som används när varken produkten eller en hook ang
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Fortnox article %(number)s is already linked to %(other)s."
+msgstr "Fortnox-artikel %(number)s är redan kopplad till %(other)s."
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/fortnox_client.py:0
 msgid "Fortnox authorization failed: %s"
 msgstr "Auktoriseringen mot Fortnox misslyckades: %s"
@@ -474,6 +583,12 @@ msgstr "Auktoriseringen mot Fortnox behöver förnyas"
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid "Fortnox calls per period must be positive."
 msgstr "Antalet Fortnox-anrop per period måste vara större än noll."
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Fortnox customer %(number)s is already linked to %(other)s."
+msgstr "Fortnox-kund %(number)s är redan kopplad till %(other)s."
 
 #. module: arc_fortnox
 #. odoo-python
@@ -600,6 +715,12 @@ msgid "Fortnox returned an unexpected response."
 msgstr "Fortnox gav ett oväntat svar."
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_customer
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
+msgid "Fortnox: Customers Are Right In"
+msgstr "Fortnox: kunduppgifter stämmer i"
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
 msgid "Fortnox: Freight Products"
@@ -610,6 +731,12 @@ msgstr "Fortnox: fraktprodukter"
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
 msgid "Fortnox: Payment Terms From"
 msgstr "Fortnox: betalningsvillkor från"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_article
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
+msgid "Fortnox: Products Are Right In"
+msgstr "Fortnox: produktuppgifter stämmer i"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_send_article_numbers
@@ -634,6 +761,11 @@ msgid "Fortnox: enqueue orders from trigger domain"
 msgstr "Fortnox: köa ordrar från triggerdomänen"
 
 #. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_arc_fortnox_record_import
+msgid "Fortnox: import records from an export"
+msgstr "Fortnox: läs in poster från en export"
+
+#. module: arc_fortnox
 #: model:ir.actions.server,name:arc_fortnox.ir_cron_process_queue_ir_actions_server
 msgid "Fortnox: process invoice queue"
 msgstr "Fortnox: bearbeta fakturakön"
@@ -652,9 +784,24 @@ msgstr "Beviljade behörigheter"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__id
 msgid "ID"
 msgstr "ID"
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
+msgid "Import"
+msgstr "Läs in"
+
+#. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_import
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
+msgid "Import Fortnox Export"
+msgstr "Läs in export från Fortnox"
 
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
@@ -689,6 +836,8 @@ msgstr "Senast förnyad"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__write_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_uid
 msgid "Last Updated by"
 msgstr "Senast uppdaterad av"
@@ -697,6 +846,8 @@ msgstr "Senast uppdaterad av"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__write_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_date
 msgid "Last Updated on"
 msgstr "Senast uppdaterad den"
@@ -713,6 +864,34 @@ msgstr "Lämna tomt på raden som gäller ordrar utan skatteposition, oftast sve
 #: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_seconds
 msgid "Length of the throttle period in seconds."
 msgstr "Längden på perioden för anropsbegränsning, i sekunder."
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__linked
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Linked"
+msgstr "Kopplad"
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Load from Fortnox"
+msgstr "Hämta från Fortnox"
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_customer
+msgid ""
+"Load them from Fortnox or import a Fortnox export. Each Fortnox\n"
+"                customer gets a suggested Odoo customer; confirm it or search\n"
+"                for the right one. The link is stored on the Odoo customer\n"
+"                only."
+msgstr "Hämta dem från Fortnox eller läs in en export från Fortnox. Varje Fortnox-kund får ett förslag på kund i Odoo; bekräfta förslaget eller sök fram rätt kund. Kopplingen sparas bara på kunden i Odoo."
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_article
+msgid ""
+"Load them from Fortnox or import a Fortnox export. The article\n"
+"                number is stored on the Odoo product only."
+msgstr "Hämta dem från Fortnox eller läs in en export från Fortnox. Artikelnumret sparas bara på produkten i Odoo."
 
 #. module: arc_fortnox
 #: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_trigger_mode__manual
@@ -737,9 +916,28 @@ msgid ""
 msgstr "Bara manuellt: ordrar köas med knappen på ordern. Automatiskt på orderdomän: ett schemalagt jobb köar också bekräftade ordrar som matchar triggerdomänen."
 
 #. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_article
+#: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_record_article
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+msgid "Map Fortnox Articles"
+msgstr "Mappa Fortnox-artiklar"
+
+#. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_customer
+#: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_record_customer
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Map Fortnox Customers"
+msgstr "Mappa Fortnox-kunder"
+
+#. module: arc_fortnox
 #: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_vat_mapping
 msgid "Map fiscal positions to Fortnox VAT types"
 msgstr "Mappa skattepositioner till Fortnox momstyper"
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "Mapping"
+msgstr "Mappning"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_throttle_calls
@@ -775,6 +973,11 @@ msgid ""
 msgstr "Inget Fortnox-konto för %s: produkten saknar konto och momsmappningen saknar standardkonto."
 
 #. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_article
+msgid "No Fortnox articles loaded yet"
+msgstr "Inga artiklar från Fortnox inlästa än"
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid ""
@@ -782,6 +985,11 @@ msgid ""
 "under Settings, or provide the parameters arc_fortnox.client_id and "
 "arc_fortnox.client_secret in the server configuration."
 msgstr "Inga klientuppgifter för Fortnox på företaget %s. Ange client id och secret under Inställningar, eller parametrarna arc_fortnox.client_id och arc_fortnox.client_secret i serverkonfigurationen."
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_customer
+msgid "No Fortnox customers loaded yet"
+msgstr "Inga kunder från Fortnox inlästa än"
 
 #. module: arc_fortnox
 #. odoo-python
@@ -803,6 +1011,48 @@ msgid ""
 msgstr "Inte köad automatiskt: %s Köa den med knappen när ordern stämmer."
 
 #. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__odoo
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__odoo
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__odoo
+msgid "Odoo"
+msgstr "Odoo"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__partner_id
+msgid "Odoo Customer"
+msgstr "Kund i Odoo"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__product_id
+msgid "Odoo Product"
+msgstr "Produkt i Odoo"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Odoo is the source of truth for customers in this company."
+msgstr "I det här företaget är det Odoo som har rätt om kunder."
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_article
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
+msgid ""
+"On the mapping page, where differences between a Fortnox article and its "
+"Odoo product are taken to be correct. Products are never changed from "
+"Fortnox; with Odoo, differences are shown to be fixed in Fortnox by hand."
+msgstr "På mappningssidan: var det som skiljer en Fortnox-artikel från produkten i Odoo räknas som rätt. Produkter ändras aldrig utifrån Fortnox; med Odoo visas skillnaderna så att de kan rättas för hand i Fortnox."
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_customer
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
+msgid ""
+"On the mapping page, where differences between a Fortnox customer and its "
+"Odoo customer are taken to be correct. Fortnox: the page offers to correct "
+"Odoo. Odoo: differences are shown to be fixed in Fortnox by hand; the module"
+" never writes to Fortnox."
+msgstr "På mappningssidan: var det som skiljer en Fortnox-kund från kunden i Odoo räknas som rätt. Fortnox: sidan erbjuder att rätta Odoo. Odoo: skillnaderna visas så att de kan rättas för hand i Fortnox; modulen skriver aldrig till Fortnox."
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Only Fortnox invoicers may change the Fortnox invoice queue."
@@ -816,9 +1066,22 @@ msgstr "Bara Fortnox-fakturerare får koppla bort en Fortnox-faktura."
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Only Fortnox invoicers may map Fortnox records."
+msgstr "Bara Fortnox-fakturerare får mappa Fortnox-poster."
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid "Only Fortnox invoicers may queue orders for Fortnox invoicing."
 msgstr "Bara Fortnox-fakturerare får köa ordrar för fakturering i Fortnox."
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "Only administrators may load records from Fortnox."
+msgstr "Bara administratörer får hämta poster från Fortnox."
 
 #. module: arc_fortnox
 #. odoo-python
@@ -836,6 +1099,12 @@ msgstr "Bara en Fortnox momsmappning per skatteposition och företag."
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Only pending or failed queue entries can be cancelled."
 msgstr "Bara väntande eller misslyckade köposter kan avbrytas."
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__open
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Open"
+msgstr "Öppen"
 
 #. module: arc_fortnox
 #. odoo-python
@@ -951,6 +1220,11 @@ msgstr "Produkt"
 #: model:ir.model,name:arc_fortnox.model_uom_uom
 msgid "Product Unit of Measure"
 msgstr "Måttenhet"
+
+#. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_product_product
+msgid "Product Variant"
+msgstr "Produktvariant"
 
 #. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_trigger_domain
@@ -1074,6 +1348,7 @@ msgstr "Fylls i när administratörerna varnats om en vilande koppling."
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__state
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__state
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__state
 msgid "State"
 msgstr "Status"
 
@@ -1081,6 +1356,34 @@ msgstr "Status"
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__state_nonce_expires_at
 msgid "State Nonce Expires At"
 msgstr "Nonce går ut"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__state_sequence
+msgid "State Sequence"
+msgstr "Statusordning"
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__suggested
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Suggested"
+msgstr "Föreslagen"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggested_partner_id
+msgid "Suggested Customer"
+msgstr "Föreslagen kund"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggested_product_id
+msgid "Suggested Product"
+msgstr "Föreslagen produkt"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_product_template__arc_fortnox_article
+msgid ""
+"The Fortnox article number of the single variant. Templates with several "
+"variants carry it per variant."
+msgstr "Fortnox artikelnummer för produktens enda variant. Produkter med flera varianter har det per variant."
 
 #. module: arc_fortnox
 #. odoo-python
@@ -1239,6 +1542,12 @@ msgid ""
 msgstr "Företagets kundnummer i Fortnox. Fylls i av Fortnox-kopplingen när den hittar eller skapar kunden; en befintlig Fortnox-kund kopplas genom att numret anges här."
 
 #. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "The file has no column for the Fortnox number. Expected one of: %s."
+msgstr "Filen saknar kolumn för Fortnox-numret. Förväntade en av: %s."
+
+#. module: arc_fortnox
 #: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_terms_source__order
 msgid "The order's payment term"
 msgstr "Orderns betalningsvillkor"
@@ -1277,6 +1586,17 @@ msgid "Trigger Mode"
 msgstr "Triggerläge"
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__truth_source
+msgid "Truth Source"
+msgstr "Rätt källa"
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__record_type
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__record_type
+msgid "Type"
+msgstr "Typ"
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Unexpected error while sending to Fortnox."
@@ -1297,8 +1617,13 @@ msgid ""
 msgstr "Okänt, återanvänt eller utgånget auktoriseringsläge. Starta en ny auktorisering från inställningarna."
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Use Suggestion"
+msgstr "Använd förslaget"
+
+#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_product_product__arc_fortnox_article
-#: model:ir.model.fields,help:arc_fortnox.field_product_template__arc_fortnox_article
 msgid ""
 "Used on invoice rows when sending article numbers is enabled in the Fortnox "
 "settings. The article must exist in Fortnox."
@@ -1319,6 +1644,16 @@ msgid ""
 msgstr "När det är påslaget använder en produkt med Fortnox artikelnummer det numret på fakturaraden, och artikeln måste finnas i Fortnox. Avstängt som standard: raderna skickas som fritext."
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "Which side is right when a Fortnox record and its Odoo record differ."
+msgstr "Vilken sida som har rätt när en Fortnox-post och dess post i Odoo skiljer sig."
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggestion_reason
+msgid "Why Suggested"
+msgstr "Varför föreslagen"
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_vat_mapping.py:0
 msgid "Without fiscal position"
@@ -1328,3 +1663,27 @@ msgstr "Utan skatteposition"
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "[('state', '=', 'sale')]"
 msgstr "[('state', '=', 'sale')]"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "internal reference"
+msgstr "internreferens"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "name"
+msgstr "namn"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "organisation number"
+msgstr "organisationsnummer"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "similar name"
+msgstr "liknande namn"

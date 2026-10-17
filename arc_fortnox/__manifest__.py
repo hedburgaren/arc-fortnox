@@ -1,6 +1,6 @@
 {
     'name': 'Fortnox Bridge (Invoice Drafts)',
-    'version': '18.0.1.4.1',
+    'version': '18.0.1.5.0',
     'category': 'Sales/Sales',
     'summary': 'Push confirmed sales orders to Fortnox as invoice drafts.',
     'description': """
@@ -34,6 +34,8 @@ Client credentials are per company and are never shipped with the module.
         'views/arc_fortnox_views.xml',
         'views/inherit_views.xml',
         'wizard/arc_fortnox_enqueue_confirm_views.xml',
+        'wizard/arc_fortnox_record_import_views.xml',
+        'views/arc_fortnox_record_views.xml',
     ],
     'application': False,
     'installable': True,

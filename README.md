@@ -69,6 +69,20 @@ clear error instead of guessing:
 | Optional: link existing Fortnox customers | Field `Fortnox Customer Number` on the company partner |
 | Optional: freight products, whose lines go to the invoice's Freight field instead of rows | Settings, Fortnox, Invoice Rows |
 
+### Map existing Fortnox customers and articles
+
+Sales, Configuration, Fortnox, **Map Fortnox Customers** and **Map
+Fortnox Articles** list the Fortnox records on the left, read only, and
+the Odoo record on the right. Load them with **Load from Fortnox** or
+**Import Fortnox Export** (a CSV export from Fortnox). Each row suggests
+an Odoo customer (same organisation number, or a close name) or product
+variant (same internal reference); confirm with **Use Suggestion** or pick
+another. The link is stored in Odoo only, as the Fortnox customer number
+on the partner and the article number on the variant. Settings, Fortnox,
+Mapping decides which side is right when they differ; with Fortnox right
+for customers, **Correct Odoo from Fortnox** copies the name and
+organisation number to Odoo.
+
 Companion modules can add warnings shown before an order is queued by
 overriding `sale.order._arc_fortnox_enqueue_warnings()`. The button then
 asks for confirmation; the automatic trigger leaves such orders out and

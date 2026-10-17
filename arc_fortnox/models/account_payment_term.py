@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AccountPaymentTerm(models.Model):
@@ -25,14 +25,29 @@ class UomUom(models.Model):
     )
 
 
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    # Per variant, like the internal reference: a Fortnox article is one
+    # sellable item, and the variants of a template are different items.
+    arc_fortnox_article = fields.Char(
+        string="Fortnox Article Number",
+        copy=False,
+        index="btree_not_null",
+        help="Used on invoice rows when sending article numbers is enabled "
+        "in the Fortnox settings. The article must exist in Fortnox.",
+    )
+
+
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
     arc_fortnox_article = fields.Char(
         string="Fortnox Article Number",
-        copy=False,
-        help="Used on invoice rows when sending article numbers is enabled "
-        "in the Fortnox settings. The article must exist in Fortnox.",
+        compute="_compute_arc_fortnox_article",
+        inverse="_inverse_arc_fortnox_article",
+        help="The Fortnox article number of the single variant. Templates "
+        "with several variants carry it per variant.",
     )
     arc_fortnox_account = fields.Char(
         string="Fortnox Revenue Account",
@@ -40,3 +55,16 @@ class ProductTemplate(models.Model):
         help="Fortnox account number for invoice rows of this product. "
         "Falls back to the default revenue account of the VAT mapping.",
     )
+
+    @api.depends("product_variant_ids.arc_fortnox_article")
+    def _compute_arc_fortnox_article(self):
+        for template in self:
+            variants = template.product_variant_ids
+            template.arc_fortnox_article = (
+                variants.arc_fortnox_article if len(variants) == 1 else False
+            )
+
+    def _inverse_arc_fortnox_article(self):
+        for template in self:
+            if len(template.product_variant_ids) == 1:
+                template.product_variant_ids.arc_fortnox_article = template.arc_fortnox_article

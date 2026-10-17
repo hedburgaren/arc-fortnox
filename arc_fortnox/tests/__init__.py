@@ -8,3 +8,4 @@ from . import test_queue_processing
 from . import test_settings
 from . import test_enqueue
 from . import test_neutralize
+from . import test_mapping_page

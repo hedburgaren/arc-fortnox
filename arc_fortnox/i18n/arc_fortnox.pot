@@ -6,14 +6,33 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 18:28+0000\n"
-"PO-Revision-Date: 2026-10-17 18:28+0000\n"
+"POT-Creation-Date: 2026-10-17 20:28+0000\n"
+"PO-Revision-Date: 2026-10-17 20:28+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid ""
+"%(partner)s is already linked to Fortnox customer %(other)s. Unlink that row"
+" first."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "%s Fortnox records loaded"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.constraint,message:arc_fortnox.constraint_arc_fortnox_record_fortnox_number_uniq
+msgid "A Fortnox number appears once per type and company."
+msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.constraint,message:arc_fortnox.constraint_arc_fortnox_credential_company_uniq
@@ -46,11 +65,23 @@ msgid "Active Fortnox Queue Entries"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__fortnox_active
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Active in Fortnox"
+msgstr ""
+
+#. module: arc_fortnox
 #: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_vat_mapping
 msgid ""
 "An order whose fiscal position has no mapping is not pushed\n"
 "                to Fortnox. The default revenue account is used when a\n"
 "                product has no account of its own."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__record_type__article
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record_import__record_type__article
+msgid "Article"
 msgstr ""
 
 #. module: arc_fortnox
@@ -99,6 +130,7 @@ msgstr ""
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_enqueue_confirm_form
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_queue_form
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
 msgid "Cancel"
 msgstr ""
 
@@ -137,6 +169,7 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__company_id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__company_id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__company_id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__company_id
 msgid "Company"
 msgstr ""
@@ -162,9 +195,16 @@ msgid "Contact"
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Correct Odoo from Fortnox"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__create_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_uid
 msgid "Created by"
 msgstr ""
@@ -173,8 +213,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__create_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__create_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_date
 msgid "Created on"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__record_type__customer
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record_import__record_type__customer
+msgid "Customer"
 msgstr ""
 
 #. module: arc_fortnox
@@ -207,6 +255,11 @@ msgid "Default Revenue Account"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__difference
+msgid "Differs"
+msgstr ""
+
+#. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.view_order_form_inherit_arc_fortnox
 msgid "Disconnect Fortnox Invoice"
 msgstr ""
@@ -221,6 +274,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__display_name
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__display_name
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__display_name
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__display_name
 msgid "Display Name"
 msgstr ""
@@ -282,11 +337,19 @@ msgid "Expiry Warned At"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__file_name
+msgid "File Name"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__fiscal_position_id
 msgid "Fiscal Position"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__fortnox
 #: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_config
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "Fortnox"
@@ -308,6 +371,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_throttle_calls
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_calls
 msgid "Fortnox Calls Per Period"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__city
+msgid "Fortnox City"
 msgstr ""
 
 #. module: arc_fortnox
@@ -337,6 +405,21 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_partner__arc_fortnox_customer_number
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_users__arc_fortnox_customer_number
 msgid "Fortnox Customer Number"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__customer_type
+msgid "Fortnox Customer Type"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__email
+msgid "Fortnox Email"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__file
+msgid "Fortnox Export (CSV)"
 msgstr ""
 
 #. module: arc_fortnox
@@ -370,6 +453,21 @@ msgid "Fortnox Max Description Length"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__name
+msgid "Fortnox Name"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__fortnox_number
+msgid "Fortnox Number"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__organisation_number
+msgid "Fortnox Organisation Number"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_account_payment_term__arc_fortnox_code
 msgid "Fortnox Payment Term Code"
 msgstr ""
@@ -377,6 +475,11 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_sale_order__arc_fortnox_queue_ids
 msgid "Fortnox Queue Entries"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_arc_fortnox_record
+msgid "Fortnox Record Mapping"
 msgstr ""
 
 #. module: arc_fortnox
@@ -458,6 +561,12 @@ msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Fortnox article %(number)s is already linked to %(other)s."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/fortnox_client.py:0
 msgid "Fortnox authorization failed: %s"
 msgstr ""
@@ -472,6 +581,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid "Fortnox calls per period must be positive."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Fortnox customer %(number)s is already linked to %(other)s."
 msgstr ""
 
 #. module: arc_fortnox
@@ -599,6 +714,12 @@ msgid "Fortnox returned an unexpected response."
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_customer
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
+msgid "Fortnox: Customers Are Right In"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
 msgid "Fortnox: Freight Products"
@@ -608,6 +729,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_terms_source
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
 msgid "Fortnox: Payment Terms From"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_truth_article
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
+msgid "Fortnox: Products Are Right In"
 msgstr ""
 
 #. module: arc_fortnox
@@ -633,6 +760,11 @@ msgid "Fortnox: enqueue orders from trigger domain"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_arc_fortnox_record_import
+msgid "Fortnox: import records from an export"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.actions.server,name:arc_fortnox.ir_cron_process_queue_ir_actions_server
 msgid "Fortnox: process invoice queue"
 msgstr ""
@@ -651,8 +783,23 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__id
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__id
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__id
 msgid "ID"
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
+msgid "Import"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_import
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_import_form
+msgid "Import Fortnox Export"
 msgstr ""
 
 #. module: arc_fortnox
@@ -688,6 +835,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__write_uid
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__write_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_uid
 msgid "Last Updated by"
 msgstr ""
@@ -696,6 +845,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_enqueue_confirm__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__write_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__write_date
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__write_date
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__write_date
 msgid "Last Updated on"
 msgstr ""
@@ -711,6 +862,34 @@ msgstr ""
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_throttle_seconds
 #: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_seconds
 msgid "Length of the throttle period in seconds."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__linked
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Linked"
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Load from Fortnox"
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_customer
+msgid ""
+"Load them from Fortnox or import a Fortnox export. Each Fortnox\n"
+"                customer gets a suggested Odoo customer; confirm it or search\n"
+"                for the right one. The link is stored on the Odoo customer\n"
+"                only."
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_article
+msgid ""
+"Load them from Fortnox or import a Fortnox export. The article\n"
+"                number is stored on the Odoo product only."
 msgstr ""
 
 #. module: arc_fortnox
@@ -736,8 +915,27 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_article
+#: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_record_article
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+msgid "Map Fortnox Articles"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.actions.act_window,name:arc_fortnox.action_arc_fortnox_record_customer
+#: model:ir.ui.menu,name:arc_fortnox.menu_arc_fortnox_record_customer
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Map Fortnox Customers"
+msgstr ""
+
+#. module: arc_fortnox
 #: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_vat_mapping
 msgid "Map fiscal positions to Fortnox VAT types"
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "Mapping"
 msgstr ""
 
 #. module: arc_fortnox
@@ -774,12 +972,22 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_article
+msgid "No Fortnox articles loaded yet"
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid ""
 "No Fortnox client credentials for company %s. Set the client id and secret "
 "under Settings, or provide the parameters arc_fortnox.client_id and "
 "arc_fortnox.client_secret in the server configuration."
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.actions.act_window,help:arc_fortnox.action_arc_fortnox_record_customer
+msgid "No Fortnox customers loaded yet"
 msgstr ""
 
 #. module: arc_fortnox
@@ -802,6 +1010,48 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__truth_source__odoo
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_article__odoo
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_truth_customer__odoo
+msgid "Odoo"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__partner_id
+msgid "Odoo Customer"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__product_id
+msgid "Odoo Product"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Odoo is the source of truth for customers in this company."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_article
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_article
+msgid ""
+"On the mapping page, where differences between a Fortnox article and its "
+"Odoo product are taken to be correct. Products are never changed from "
+"Fortnox; with Odoo, differences are shown to be fixed in Fortnox by hand."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_truth_customer
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_truth_customer
+msgid ""
+"On the mapping page, where differences between a Fortnox customer and its "
+"Odoo customer are taken to be correct. Fortnox: the page offers to correct "
+"Odoo. Odoo: differences are shown to be fixed in Fortnox by hand; the module"
+" never writes to Fortnox."
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Only Fortnox invoicers may change the Fortnox invoice queue."
@@ -815,8 +1065,21 @@ msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "Only Fortnox invoicers may map Fortnox records."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid "Only Fortnox invoicers may queue orders for Fortnox invoicing."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "Only administrators may load records from Fortnox."
 msgstr ""
 
 #. module: arc_fortnox
@@ -834,6 +1097,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Only pending or failed queue entries can be cancelled."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__open
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Open"
 msgstr ""
 
 #. module: arc_fortnox
@@ -949,6 +1218,11 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model,name:arc_fortnox.model_uom_uom
 msgid "Product Unit of Measure"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_product_product
+msgid "Product Variant"
 msgstr ""
 
 #. module: arc_fortnox
@@ -1073,12 +1347,41 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__state
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__state
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__state
 msgid "State"
 msgstr ""
 
 #. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__state_nonce_expires_at
 msgid "State Nonce Expires At"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__state_sequence
+msgid "State Sequence"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__arc_fortnox_record__state__suggested
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_search
+msgid "Suggested"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggested_partner_id
+msgid "Suggested Customer"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggested_product_id
+msgid "Suggested Product"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_product_template__arc_fortnox_article
+msgid ""
+"The Fortnox article number of the single variant. Templates with several "
+"variants carry it per variant."
 msgstr ""
 
 #. module: arc_fortnox
@@ -1238,6 +1541,12 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/wizard/arc_fortnox_record_import.py:0
+msgid "The file has no column for the Fortnox number. Expected one of: %s."
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_terms_source__order
 msgid "The order's payment term"
 msgstr ""
@@ -1276,6 +1585,17 @@ msgid "Trigger Mode"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__truth_source
+msgid "Truth Source"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__record_type
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record_import__record_type
+msgid "Type"
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Unexpected error while sending to Fortnox."
@@ -1296,8 +1616,13 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_article_list
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_record_customer_list
+msgid "Use Suggestion"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_product_product__arc_fortnox_article
-#: model:ir.model.fields,help:arc_fortnox.field_product_template__arc_fortnox_article
 msgid ""
 "Used on invoice rows when sending article numbers is enabled in the Fortnox "
 "settings. The article must exist in Fortnox."
@@ -1318,6 +1643,16 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "Which side is right when a Fortnox record and its Odoo record differ."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_record__suggestion_reason
+msgid "Why Suggested"
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_vat_mapping.py:0
 msgid "Without fiscal position"
@@ -1326,4 +1661,28 @@ msgstr ""
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "[('state', '=', 'sale')]"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "internal reference"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "name"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "organisation number"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "similar name"
 msgstr ""

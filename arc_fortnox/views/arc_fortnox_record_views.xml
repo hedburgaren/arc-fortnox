@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fortnox on the left, read only; Odoo on the right, searchable. -->
+    <record id="view_arc_fortnox_record_customer_list" model="ir.ui.view">
+        <field name="name">arc.fortnox.record.customer.list</field>
+        <field name="model">arc.fortnox.record</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <list string="Map Fortnox Customers" editable="bottom" create="0" delete="0"
+                  decoration-muted="not fortnox_active" decoration-warning="difference">
+                <header>
+                    <button name="%(action_arc_fortnox_record_import)d" type="action" string="Import Fortnox Export"
+                            display="always" groups="base.group_system" context="{'default_record_type': 'customer'}"/>
+                    <button name="action_arc_fortnox_fetch_customers" type="object" string="Load from Fortnox"
+                            display="always" groups="base.group_system"/>
+                </header>
+                <field name="fortnox_number"/>
+                <field name="name"/>
+                <field name="organisation_number"/>
+                <field name="city" optional="show"/>
+                <field name="customer_type" optional="hide"/>
+                <field name="fortnox_active" optional="hide"/>
+                <field name="partner_id" options="{'no_create': True}"/>
+                <field name="suggested_partner_id" optional="show"/>
+                <field name="suggestion_reason" optional="show"/>
+                <button name="action_use_suggestion" type="object" string="Use Suggestion" icon="fa-check"
+                        invisible="state != 'suggested'"/>
+                <field name="difference" optional="show"/>
+                <field name="truth_source" column_invisible="1"/>
+                <button name="action_copy_from_fortnox" type="object" string="Correct Odoo from Fortnox" icon="fa-download"
+                        invisible="not difference or truth_source != 'fortnox'"/>
+                <field name="state" widget="badge" decoration-success="state == 'linked'" decoration-info="state == 'suggested'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_arc_fortnox_record_article_list" model="ir.ui.view">
+        <field name="name">arc.fortnox.record.article.list</field>
+        <field name="model">arc.fortnox.record</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list string="Map Fortnox Articles" editable="bottom" create="0" delete="0"
+                  decoration-muted="not fortnox_active" decoration-warning="difference">
+                <header>
+                    <button name="%(action_arc_fortnox_record_import)d" type="action" string="Import Fortnox Export"
+                            display="always" groups="base.group_system" context="{'default_record_type': 'article'}"/>
+                    <button name="action_arc_fortnox_fetch_articles" type="object" string="Load from Fortnox"
+                            display="always" groups="base.group_system"/>
+                </header>
+                <field name="fortnox_number"/>
+                <field name="name"/>
+                <field name="fortnox_active" optional="hide"/>
+                <field name="product_id" options="{'no_create': True}"/>
+                <field name="suggested_product_id" optional="show"/>
+                <field name="suggestion_reason" optional="hide"/>
+                <button name="action_use_suggestion" type="object" string="Use Suggestion" icon="fa-check"
+                        invisible="state != 'suggested'"/>
+                <field name="difference" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'linked'" decoration-info="state == 'suggested'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_arc_fortnox_record_search" model="ir.ui.view">
+        <field name="name">arc.fortnox.record.search</field>
+        <field name="model">arc.fortnox.record</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="fortnox_number"/>
+                <field name="organisation_number"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <filter name="filter_suggested" string="Suggested" domain="[('state', '=', 'suggested')]"/>
+                <filter name="filter_open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="filter_linked" string="Linked" domain="[('state', '=', 'linked')]"/>
+                <separator/>
+                <filter name="filter_active" string="Active in Fortnox" domain="[('fortnox_active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_arc_fortnox_record_customer" model="ir.actions.act_window">
+        <field name="name">Map Fortnox Customers</field>
+        <field name="res_model">arc.fortnox.record</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_arc_fortnox_record_customer_list"/>
+        <field name="domain">[('record_type', '=', 'customer')]</field>
+        <field name="context">{'default_record_type': 'customer', 'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Fortnox customers loaded yet</p>
+            <p>Load them from Fortnox or import a Fortnox export. Each Fortnox
+                customer gets a suggested Odoo customer; confirm it or search
+                for the right one. The link is stored on the Odoo customer
+                only.</p>
+        </field>
+    </record>
+
+    <record id="action_arc_fortnox_record_article" model="ir.actions.act_window">
+        <field name="name">Map Fortnox Articles</field>
+        <field name="res_model">arc.fortnox.record</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_arc_fortnox_record_article_list"/>
+        <field name="domain">[('record_type', '=', 'article')]</field>
+        <field name="context">{'default_record_type': 'article', 'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Fortnox articles loaded yet</p>
+            <p>Load them from Fortnox or import a Fortnox export. The article
+                number is stored on the Odoo product only.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_arc_fortnox_record_customer"
+              action="action_arc_fortnox_record_customer"
+              parent="menu_arc_fortnox_config"
+              sequence="30"/>
+
+    <menuitem id="menu_arc_fortnox_record_article"
+              action="action_arc_fortnox_record_article"
+              parent="menu_arc_fortnox_config"
+              sequence="40"/>
+</odoo>

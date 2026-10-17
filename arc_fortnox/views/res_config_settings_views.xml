@@ -88,6 +88,16 @@
                                 <field name="arc_fortnox_freight_product_ids" widget="many2many_tags"/>
                             </div>
                         </setting>
+                        <setting id="arc_fortnox_mapping" string="Mapping" company_dependent="1" help="Which side is right when a Fortnox record and its Odoo record differ.">
+                            <div class="row">
+                                <label for="arc_fortnox_truth_customer" class="col-lg-3 o_light_label"/>
+                                <field name="arc_fortnox_truth_customer"/>
+                            </div>
+                            <div class="row">
+                                <label for="arc_fortnox_truth_article" class="col-lg-3 o_light_label"/>
+                                <field name="arc_fortnox_truth_article"/>
+                            </div>
+                        </setting>
                     </block>
                 </app>
             </xpath>
