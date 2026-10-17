@@ -8,6 +8,11 @@ from .sale_order import GROUP_INVOICER
 
 RECORD_TYPES = [("customer", "Customer"), ("article", "Article")]
 NAME_SUGGESTION_CUTOFF = 0.85
+# The Fortnox side of a mapping row: a copy of Fortnox, written only by the
+# import.
+FORTNOX_FIELDS = (
+    "name", "organisation_number", "email", "city", "customer_type", "fortnox_active",
+)
 FETCH_PAGE_LIMIT = 500
 
 
@@ -56,7 +61,10 @@ class ArcFortnoxRecord(models.Model):
 
     partner_id = fields.Many2one(
         "res.partner", string="Odoo Customer", index=True,
-        domain="[('is_company', '=', True), ('parent_id', '=', False)]",
+        # A customer is a company or a private person on its own (no
+        # parent): a sole trader or a private customer is an individual in
+        # Odoo (verifier finding on task 136).
+        domain="[('parent_id', '=', False)]",
     )
     product_id = fields.Many2one("product.product", string="Odoo Product", index=True)
     suggested_partner_id = fields.Many2one("res.partner", string="Suggested Customer", readonly=True)
@@ -123,6 +131,14 @@ class ArcFortnoxRecord(models.Model):
             raise AccessError(_("Only Fortnox invoicers may map Fortnox records."))
 
     def write(self, vals):
+        locked = set(FORTNOX_FIELDS) & set(vals)
+        if locked:
+            # The Fortnox side is a copy of Fortnox, refreshed only by the
+            # import (which writes past this method); the form shows it
+            # read only and RPC may not change it either.
+            raise UserError(
+                _("The Fortnox fields are a copy of Fortnox and cannot be edited here.")
+            )
         linking = {"partner_id", "product_id"} & set(vals)
         if linking:
             self._check_invoicer()
@@ -215,9 +231,7 @@ class ArcFortnoxRecord(models.Model):
             )
         }
         touched = self.browse()
-        fortnox_fields = (
-            "name", "organisation_number", "email", "city", "customer_type", "fortnox_active",
-        )
+        fortnox_fields = FORTNOX_FIELDS
         for row in rows:
             number = (row.get("fortnox_number") or "").strip()
             if not number:
@@ -273,29 +287,35 @@ class ArcFortnoxRecord(models.Model):
         customers = self.filtered(lambda r: r.record_type == "customer" and not r.partner_id)
         if customers:
             normalise = self.env["sale.order"]._arc_fortnox_normalise_org_number
-            companies = Partner.search(
-                [("is_company", "=", True), ("parent_id", "=", False)]
-            )
-            by_orgnr, by_name = {}, {}
-            for partner in companies:
+            # Companies and private persons without a parent: a Fortnox
+            # customer of type PRIVATE is matched by name among the persons,
+            # any other among the companies; the organisation number (or a
+            # personnummer in the same field) matches either.
+            candidates = Partner.search([("parent_id", "=", False)])
+            by_orgnr = {}
+            by_name = {True: {}, False: {}}
+            for partner in candidates:
                 for value in (partner.company_registry, partner.vat):
                     key = normalise(value)
                     if key:
                         by_orgnr.setdefault(key, partner)
                 if not partner.arc_fortnox_customer_number:
-                    by_name.setdefault(normalise_name(partner.name), partner)
-            names = list(by_name)
+                    by_name[bool(partner.is_company)].setdefault(
+                        normalise_name(partner.name), partner
+                    )
             for record in customers:
                 partner, reason = Partner, ""
                 key = normalise(record.organisation_number)
+                pool = by_name[(record.customer_type or "").upper() != "PRIVATE"]
                 if key and key in by_orgnr:
                     partner, reason = by_orgnr[key], _("organisation number")
                 else:
                     close = difflib.get_close_matches(
-                        normalise_name(record.name), names, n=1, cutoff=NAME_SUGGESTION_CUTOFF
+                        normalise_name(record.name), list(pool), n=1,
+                        cutoff=NAME_SUGGESTION_CUTOFF,
                     )
                     if close:
-                        partner, reason = by_name[close[0]], _("similar name")
+                        partner, reason = pool[close[0]], _("similar name")
                 super(ArcFortnoxRecord, record).write(
                     {"suggested_partner_id": partner.id, "suggestion_reason": reason}
                 )

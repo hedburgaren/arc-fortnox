@@ -1676,3 +1676,9 @@ msgstr "organisationsnummer"
 #: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
 msgid "similar name"
 msgstr "liknande namn"
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
+msgid "The Fortnox fields are a copy of Fortnox and cannot be edited here."
+msgstr "Fortnox-fälten är en kopia av Fortnox och kan inte ändras här."
