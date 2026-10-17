@@ -123,6 +123,30 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
         self.assertNotIn("Freight DHL", descriptions)
         self.assertEqual(len(payload["InvoiceRows"]), 1)
 
+    def test_draft_carries_the_template_of_the_customer_type(self):
+        self.company.write({"arc_fortnox_invoice_template_private": "QR"})
+        self.partner.write({"is_company": True})
+        self._invoice_post_result("16")
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertNotIn("PrintTemplate", self._post_payload(), "A company customer here.")
+        self.fake_client.calls.clear()
+        self.fake_client._get_results.append(
+            {
+                "Customer": {
+                    "CustomerNumber": "7",
+                    "VATType": "SEVAT",
+                    "Currency": self.order.currency_id.name,
+                    "TermsOfPayment": "15",
+                }
+            }
+        )
+        self._invoice_post_result("17")
+        with patch.object(
+            type(self.order), "_arc_fortnox_customer_type", lambda self, partner: "PRIVATE"
+        ):
+            self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertEqual(self._post_payload()["PrintTemplate"], "QR")
+
     def test_no_freight_products_keeps_freight_as_a_row(self):
         self._invoice_post_result("15")
         self.order._arc_fortnox_push_draft(self.fake_client)

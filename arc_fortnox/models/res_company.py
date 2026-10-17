@@ -120,6 +120,19 @@ class ResCompany(models.Model):
         "their sum goes to the invoice's Freight field, where Fortnox "
         "applies its own freight VAT. Empty: freight lines are ordinary rows.",
     )
+    arc_fortnox_invoice_template_company = fields.Char(
+        string="Fortnox: Invoice Template for Companies",
+        help="Fortnox invoice template for drafts to company customers, and "
+        "the default template of company customers the module creates. "
+        "Empty: Fortnox's own default.",
+    )
+    arc_fortnox_invoice_template_private = fields.Char(
+        string="Fortnox: Invoice Template for Private Customers",
+        help="Fortnox invoice template for drafts to private customers, and "
+        "the default template of private customers the module creates, for "
+        "example a template with a payment QR code. Empty: Fortnox's own "
+        "default.",
+    )
     arc_fortnox_terms_source = fields.Selection(
         [
             ("order", "The order's payment term"),

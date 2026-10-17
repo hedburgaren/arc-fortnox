@@ -102,6 +102,12 @@ class SaleOrder(models.Model):
                 invoice["TermsOfPayment"] = self._arc_fortnox_payment_term_code()
             if self._arc_fortnox_freight_lines():
                 invoice["Freight"] = self._arc_fortnox_freight_amount()
+            partner = self.partner_invoice_id.commercial_partner_id
+            template = self._arc_fortnox_invoice_template(
+                self._arc_fortnox_customer_type(partner)
+            )
+            if template:
+                invoice["PrintTemplate"] = template
             if self.client_order_ref:
                 # The customer's own order reference ("Er ordernummer").
                 invoice["YourOrderNumber"] = self.client_order_ref
@@ -502,9 +508,10 @@ class SaleOrder(models.Model):
         partner = self.partner_invoice_id.commercial_partner_id
         invoice_address = self.partner_invoice_id
         mapping = self._arc_fortnox_vat_mapping()
+        customer_type = self._arc_fortnox_customer_type(partner)
         payload = {
             "Name": partner.name,
-            "Type": "COMPANY" if partner.is_company else "PRIVATE",
+            "Type": customer_type,
             "VATType": mapping.vat_type,
             "Currency": self.currency_id.name,
             "TermsOfPayment": self._arc_fortnox_payment_term_code(),
@@ -530,7 +537,27 @@ class SaleOrder(models.Model):
         email = invoice_address.email or partner.email
         if email:
             payload["EmailInvoice"] = email
+        template = self._arc_fortnox_invoice_template(customer_type)
+        if template:
+            payload["DefaultTemplates"] = {"Invoice": template}
         return payload
+
+    def _arc_fortnox_customer_type(self, partner):
+        """COMPANY or PRIVATE for the Fortnox customer. Override to adapt.
+
+        A sole trader is a company in Odoo but may be a private customer in
+        Fortnox, so a companion module can decide by its own rule.
+        """
+        self.ensure_one()
+        return "COMPANY" if partner.is_company else "PRIVATE"
+
+    def _arc_fortnox_invoice_template(self, customer_type):
+        """The Fortnox invoice template configured for the customer type."""
+        self.ensure_one()
+        company = self.company_id.sudo()
+        if customer_type == "PRIVATE":
+            return company.arc_fortnox_invoice_template_private or ""
+        return company.arc_fortnox_invoice_template_company or ""
 
     def _arc_fortnox_resolve_customer(self, client):
         """Return the Fortnox customer number for this order's customer.

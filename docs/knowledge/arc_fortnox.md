@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.5.1.
+public repository. Version 18.0.1.6.0.
 
 ## Key models
 
@@ -112,6 +112,15 @@ create could duplicate a customer already in Fortnox. An organisation
 number Fortnox does not know: create from
 `_arc_fortnox_customer_payload` (Type COMPANY or PRIVATE, organisation
 number and VAT number in their own fields, invoice address and email).
+
+Customer type: `_arc_fortnox_customer_type(partner)` (COMPANY when
+`is_company`, else PRIVATE; companion modules override, for example for
+sole traders) sets `Type` in the customer payload and picks the invoice
+template: `res.company.arc_fortnox_invoice_template_company` or
+`_private`, sent as `PrintTemplate` on every draft and as
+`DefaultTemplates.Invoice` on customers the module creates. Empty sends
+nothing. Open for the sandbox: whether Fortnox takes the template's name
+or its code.
 
 Draft: `ExternalInvoiceReference1` = order name, `YourOrderNumber` =
 `client_order_ref` when set, `VATIncluded` from the taxes (mixed stops),

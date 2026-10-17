@@ -112,6 +112,11 @@ count that turns a queue entry into a hard error, the description length
 that triggers continuation rows, and whether products with article numbers
 send `ArticleNumber` instead of free text rows.
 
+An invoice template per customer type (company, private) can be set
+under Settings, Fortnox, Invoice Rows, for example a template with a
+payment QR code for private customers. Drafts carry it, and customers the
+module creates get it as their default.
+
 Payment terms come from the order by default: the draft carries the
 order's term, and a Fortnox customer with other terms stops the push. Set
 **Payment Terms From** to *The Fortnox customer's terms* when Fortnox is

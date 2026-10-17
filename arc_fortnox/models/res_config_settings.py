@@ -74,6 +74,16 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Fortnox: Freight Products",
     )
+    arc_fortnox_invoice_template_company = fields.Char(
+        related="company_id.arc_fortnox_invoice_template_company",
+        readonly=False,
+        string="Fortnox: Invoice Template for Companies",
+    )
+    arc_fortnox_invoice_template_private = fields.Char(
+        related="company_id.arc_fortnox_invoice_template_private",
+        readonly=False,
+        string="Fortnox: Invoice Template for Private Customers",
+    )
     arc_fortnox_terms_source = fields.Selection(
         related="company_id.arc_fortnox_terms_source",
         readonly=False,

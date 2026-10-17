@@ -357,3 +357,26 @@ class TestCustomerStep(ArcFortnoxF1Common):
         body = self.order._arc_fortnox_customer_payload()
         self.assertEqual(body["Type"], "PRIVATE")
         self.assertEqual(body["OrganisationNumber"], "19800101-1234")
+        self.assertNotIn("DefaultTemplates", body, "No template configured, none sent.")
+
+    def test_new_customer_gets_the_template_of_its_type(self):
+        self.company.write(
+            {
+                "arc_fortnox_invoice_template_private": "QR",
+                "arc_fortnox_invoice_template_company": "STD",
+            }
+        )
+        self.partner.write({"is_company": False})
+        self.assertEqual(
+            self.order._arc_fortnox_customer_payload()["DefaultTemplates"], {"Invoice": "QR"}
+        )
+        self.partner.write({"is_company": True})
+        self.assertEqual(
+            self.order._arc_fortnox_customer_payload()["DefaultTemplates"], {"Invoice": "STD"}
+        )
+
+    def test_customer_type_hook_decides_the_type(self):
+        with patch.object(
+            type(self.order), "_arc_fortnox_customer_type", lambda self, partner: "PRIVATE"
+        ):
+            self.assertEqual(self.order._arc_fortnox_customer_payload()["Type"], "PRIVATE")

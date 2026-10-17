@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 20:45+0000\n"
-"PO-Revision-Date: 2026-10-17 20:45+0000\n"
+"POT-Creation-Date: 2026-10-17 20:59+0000\n"
+"PO-Revision-Date: 2026-10-17 20:59+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -652,6 +652,24 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_invoice_template_company
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_invoice_template_company
+msgid ""
+"Fortnox invoice template for drafts to company customers, and the default "
+"template of company customers the module creates. Empty: Fortnox's own "
+"default."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_invoice_template_private
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_invoice_template_private
+msgid ""
+"Fortnox invoice template for drafts to private customers, and the default "
+"template of private customers the module creates, for example a template "
+"with a payment QR code. Empty: Fortnox's own default."
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Fortnox invoicing failed"
@@ -709,6 +727,18 @@ msgstr ""
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_freight_product_ids
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_freight_product_ids
 msgid "Fortnox: Freight Products"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_invoice_template_company
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_invoice_template_company
+msgid "Fortnox: Invoice Template for Companies"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_invoice_template_private
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_invoice_template_private
+msgid "Fortnox: Invoice Template for Private Customers"
 msgstr ""
 
 #. module: arc_fortnox
