@@ -2,6 +2,8 @@ from odoo.addons.arc_fortnox.models.fortnox_client import FortnoxError
 from odoo.exceptions import ValidationError
 from unittest.mock import patch
 
+from odoo.tools import mute_logger
+
 from .common import ArcFortnoxF1Common
 
 
@@ -51,6 +53,28 @@ class TestVatMapping(ArcFortnoxF1Common):
         with self.assertRaises(FortnoxError) as context:
             order._arc_fortnox_vat_mapping()
         self.assertEqual(context.exception.error_code, "vat_mapping_missing")
+
+    def test_order_without_fiscal_position_uses_the_default_row(self):
+        # Audit P7: domestic orders usually carry no fiscal position.
+        order = self._create_mapping()
+        order.write({"fiscal_position_id": False})
+        with self.assertRaises(FortnoxError):
+            order._arc_fortnox_vat_mapping()
+        default = self.env["arc.fortnox.vat.mapping"].create(
+            {"company_id": self.company.id, "vat_type": "SEVAT", "revenue_account": "3001"}
+        )
+        self.assertEqual(order._arc_fortnox_vat_mapping(), default)
+        self.assertEqual(default.display_name, "Without fiscal position")
+
+    def test_one_default_row_per_company(self):
+        self.env["arc.fortnox.vat.mapping"].create(
+            {"company_id": self.company.id, "vat_type": "SEVAT"}
+        )
+        with self.assertRaises(Exception), mute_logger("odoo.sql_db"):
+            self.env["arc.fortnox.vat.mapping"].create(
+                {"company_id": self.company.id, "vat_type": "EXPORT"}
+            )
+            self.env.flush_all()
 
     def test_revenue_account_must_be_numeric(self):
         with self.assertRaises(ValidationError):
