@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 09:23+0000\n"
-"PO-Revision-Date: 2026-10-17 09:23+0000\n"
+"POT-Creation-Date: 2026-10-17 15:36+0000\n"
+"PO-Revision-Date: 2026-10-17 15:36+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -156,6 +156,11 @@ msgid "Connection and response timeouts in seconds."
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model,name:arc_fortnox.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_queue__create_uid
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_vat_mapping__create_uid
@@ -262,6 +267,12 @@ msgid "Error Text"
 msgstr ""
 
 #. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Existing Fortnox invoice draft %s adopted."
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__expiry_warned_at
 msgid "Expiry Warned At"
 msgstr ""
@@ -316,6 +327,12 @@ msgstr ""
 #. module: arc_fortnox
 #: model:ir.model,name:arc_fortnox.model_arc_fortnox_credential
 msgid "Fortnox Connection Credential"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_partner__arc_fortnox_customer_number
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_users__arc_fortnox_customer_number
+msgid "Fortnox Customer Number"
 msgstr ""
 
 #. module: arc_fortnox
@@ -394,6 +411,12 @@ msgid "Fortnox Trigger Mode"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_trigger_since
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_trigger_since
+msgid "Fortnox Trigger Since"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_uom_uom__arc_fortnox_unit
 msgid "Fortnox Unit Code"
 msgstr ""
@@ -449,6 +472,14 @@ msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"Fortnox customer %s carries another organisation number than the partner. "
+"Correct the Fortnox customer number on the partner, then retry."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/fortnox_client.py:0
 msgid "Fortnox did not answer within the configured timeout."
 msgstr ""
@@ -456,13 +487,35 @@ msgstr ""
 #. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
-msgid "Fortnox did not return a customer number for %s."
+msgid "Fortnox did not return a customer number for the order's customer."
 msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid "Fortnox did not return an invoice number for %s."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Fortnox follow up failed"
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"Fortnox has %s customers with the organisation number of this partner. Set "
+"the right Fortnox customer number on the partner, then retry."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"Fortnox holds more than one live invoice with reference %s (%s). Cancel the "
+"extra ones in Fortnox, then retry."
 msgstr ""
 
 #. module: arc_fortnox
@@ -477,6 +530,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
 msgid "Fortnox invoice draft %s created."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid ""
+"Fortnox invoice draft %s exists and is recorded on the order, but the follow"
+" up steps after it failed. See the server log for queue entry %s."
 msgstr ""
 
 #. module: arc_fortnox
@@ -501,6 +562,18 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid "Fortnox max attempts must be between 1 and 10."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Fortnox queue entry cancelled by %s."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Fortnox queue entry retried by %s."
 msgstr ""
 
 #. module: arc_fortnox
@@ -598,6 +671,13 @@ msgid "Last Updated on"
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_arc_fortnox_vat_mapping__fiscal_position_id
+msgid ""
+"Leave empty for the row that applies to orders without a fiscal position, "
+"usually domestic customers."
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_throttle_seconds
 #: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_throttle_seconds
 msgid "Length of the throttle period in seconds."
@@ -685,6 +765,12 @@ msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Only Fortnox invoicers may change the Fortnox invoice queue."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid "Only Fortnox invoicers may disconnect a Fortnox invoice."
 msgstr ""
@@ -696,6 +782,12 @@ msgid "Only Fortnox invoicers may queue orders for Fortnox invoicing."
 msgstr ""
 
 #. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Only failed queue entries can be retried."
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.constraint,message:arc_fortnox.constraint_arc_fortnox_vat_mapping_fiscal_position_company_uniq
 msgid "Only one Fortnox VAT mapping per fiscal position and company."
 msgstr ""
@@ -703,7 +795,13 @@ msgstr ""
 #. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
-msgid "Only pending queue entries can be cancelled."
+msgid "Only pending or failed queue entries can be cancelled."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Order %s already has Fortnox invoice %s; nothing was sent."
 msgstr ""
 
 #. module: arc_fortnox
@@ -726,6 +824,12 @@ msgstr ""
 
 #. module: arc_fortnox
 #. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
+msgid "Order %s is no longer confirmed; nothing was sent."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid ""
 "Order %s is not confirmed, so it cannot be queued for Fortnox invoicing."
@@ -741,6 +845,22 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid ""
+"Order %s mixes taxes that include VAT in the price with taxes that do not. "
+"Fortnox takes one setting per invoice."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"Order line %s has a tax that is not a plain percentage. Fortnox rows carry a"
+" VAT rate in percent."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
 "Order line %s has more than one tax. Fortnox rows carry one VAT rate each."
 msgstr ""
 
@@ -748,8 +868,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/arc_fortnox/models/sale_order.py:0
 msgid ""
-"Partner %s references Fortnox customer %s, but no such customer exists "
-"there. The push stops instead of creating a customer on a stale reference."
+"Order line %s has no tax, but the order is under Swedish VAT. Set the tax on"
+" the line, 0 percent if the line is exempt."
 msgstr ""
 
 #. module: arc_fortnox
@@ -811,14 +931,6 @@ msgid "Rate Limit"
 msgstr ""
 
 #. module: arc_fortnox
-#. odoo-python
-#: code:addons/arc_fortnox/models/sale_order.py:0
-msgid ""
-"Reference %s is used by more than one partner. Fortnox cannot be resolved "
-"for %s until it is unique."
-msgstr ""
-
-#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_arc_fortnox_credential__refresh_token
 msgid "Refresh Token"
 msgstr ""
@@ -826,6 +938,11 @@ msgstr ""
 #. module: arc_fortnox
 #: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
 msgid "Retries"
+msgstr ""
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.view_arc_fortnox_queue_form
+msgid "Retry"
 msgstr ""
 
 #. module: arc_fortnox
@@ -1024,6 +1141,32 @@ msgid ""
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_trigger_since
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_trigger_since
+msgid ""
+"The automatic trigger only queues orders confirmed from this moment on. Set "
+"when the automatic mode is switched on, so the orders that existed before "
+"are never queued in bulk; move it back deliberately to include older orders."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_partner__arc_fortnox_customer_number
+#: model:ir.model.fields,help:arc_fortnox.field_res_users__arc_fortnox_customer_number
+msgid ""
+"The customer number of this company in Fortnox. Set by the Fortnox bridge "
+"when it finds or creates the customer; an existing Fortnox customer can be "
+"linked by entering its number here."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/sale_order.py:0
+msgid ""
+"The partner references Fortnox customer %s, but no such customer exists "
+"there. The push stops instead of creating a customer on a stale reference."
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,help:arc_fortnox.field_arc_fortnox_credential__scope
 msgid "The scopes Fortnox granted at the last authorization."
 msgstr ""
@@ -1041,7 +1184,7 @@ msgstr ""
 #. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/arc_fortnox_queue.py:0
-msgid "Unexpected error while pushing to Fortnox."
+msgid "Unexpected error while sending to Fortnox."
 msgstr ""
 
 #. module: arc_fortnox
@@ -1073,6 +1216,12 @@ msgid ""
 "When enabled, a product with a Fortnox article number configured uses "
 "ArticleNumber on the invoice row and the article must exist in Fortnox. Off "
 "by default: rows are sent as free text."
+msgstr ""
+
+#. module: arc_fortnox
+#. odoo-python
+#: code:addons/arc_fortnox/models/arc_fortnox_vat_mapping.py:0
+msgid "Without fiscal position"
 msgstr ""
 
 #. module: arc_fortnox
