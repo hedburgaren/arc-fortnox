@@ -110,6 +110,20 @@ class ResCompany(models.Model):
         "configured uses ArticleNumber on the invoice row and the article "
         "must exist in Fortnox. Off by default: rows are sent as free text.",
     )
+    arc_fortnox_terms_source = fields.Selection(
+        [
+            ("order", "The order's payment term"),
+            ("customer", "The Fortnox customer's terms"),
+        ],
+        string="Fortnox: Payment Terms From",
+        default="order",
+        required=True,
+        help="The order's payment term: sent on every draft, and a Fortnox "
+        "customer with other terms stops the push. The Fortnox customer's "
+        "terms: the draft carries no terms, so Fortnox applies the "
+        "customer's own; a customer created by this module gets the "
+        "order's term.",
+    )
 
     def write(self, vals):
         mode = vals.get("arc_fortnox_trigger_mode")

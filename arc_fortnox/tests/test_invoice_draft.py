@@ -92,6 +92,12 @@ class TestInvoiceDraft(ArcFortnoxF1Common):
                 return call[2]["Invoice"]
         return None
 
+    def test_draft_leaves_terms_to_fortnox_when_customer_terms_win(self):
+        self.company.arc_fortnox_terms_source = "customer"
+        self._invoice_post_result("13")
+        self.order._arc_fortnox_push_draft(self.fake_client)
+        self.assertNotIn("TermsOfPayment", self._post_payload())
+
     def test_push_posts_draft_and_returns_number(self):
         self._invoice_post_result("12")
         number = self.order._arc_fortnox_push_draft(self.fake_client)

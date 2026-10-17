@@ -92,6 +92,16 @@ count that turns a queue entry into a hard error, the description length
 that triggers continuation rows, and whether products with article numbers
 send `ArticleNumber` instead of free text rows.
 
+Payment terms come from the order by default: the draft carries the
+order's term, and a Fortnox customer with other terms stops the push. Set
+**Payment Terms From** to *The Fortnox customer's terms* when Fortnox is
+where terms are kept: drafts then carry no terms and Fortnox applies the
+customer's own, while a customer the module creates gets the order's term.
+
+A company partner with neither a Fortnox customer number nor an
+organisation number stops the push before any request, since a new
+customer could duplicate one already in Fortnox.
+
 ## Who may do what
 
 | Group | Rights |

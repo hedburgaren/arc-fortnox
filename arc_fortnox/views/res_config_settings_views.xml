@@ -79,6 +79,10 @@
                                 <field name="arc_fortnox_send_article_numbers"/>
                                 <label for="arc_fortnox_send_article_numbers"/>
                             </div>
+                            <div class="row">
+                                <label for="arc_fortnox_terms_source" class="col-lg-3 o_light_label"/>
+                                <field name="arc_fortnox_terms_source"/>
+                            </div>
                         </setting>
                     </block>
                 </app>

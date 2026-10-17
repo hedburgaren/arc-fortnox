@@ -293,6 +293,15 @@ class TestCustomerStep(ArcFortnoxF1Common):
             context.exception.error_code, "customer_payment_term_mismatch"
         )
 
+    def test_terms_mismatch_ignored_when_fortnox_terms_win(self):
+        self.company.arc_fortnox_terms_source = "customer"
+        self.partner.write({"arc_fortnox_customer_number": "7"})
+        self.fake_client._get_results.append(
+            {"Customer": self.fake_customer(TermsOfPayment="30")}
+        )
+        number = self.order._arc_fortnox_resolve_customer(self.fake_client)
+        self.assertEqual(number, "7")
+
     def test_vat_type_mismatch_stops(self):
         self.partner.write({"arc_fortnox_customer_number": "7"})
         self.fake_client._get_results.append(

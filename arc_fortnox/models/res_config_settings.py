@@ -69,6 +69,11 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Fortnox: Send Article Numbers",
     )
+    arc_fortnox_terms_source = fields.Selection(
+        related="company_id.arc_fortnox_terms_source",
+        readonly=False,
+        string="Fortnox: Payment Terms From",
+    )
     arc_fortnox_redirect_uri = fields.Char(
         compute="_compute_arc_fortnox_redirect_uri",
         string="Fortnox Redirect URI",

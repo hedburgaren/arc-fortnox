@@ -3,7 +3,7 @@
 Purpose: push confirmed sales orders to Fortnox as invoice drafts through
 a queue, with retries and recovery that never duplicates a draft. Odoo
 never books, sends, prints or emails; Fortnox owns bookkeeping. LGPL-3,
-public repository. Version 18.0.1.2.0.
+public repository. Version 18.0.1.3.0.
 
 ## Key models
 
@@ -14,7 +14,10 @@ public repository. Version 18.0.1.2.0.
   domain and `arc_fortnox_trigger_since` (stamped by `write` when the
   mode switches to domain, cleared when it switches back), throttle,
   timeouts, backoff schedule, max attempts, description split length,
-  send article numbers. `arc_fortnox_client()` returns the API client;
+  send article numbers, `arc_fortnox_terms_source` (`order`, default:
+  the draft carries the order's term and a customer with other terms
+  stops; `customer`: the draft carries no terms, Fortnox applies the
+  customer's, no terms check). `arc_fortnox_client()` returns the API client;
   `arc_fortnox_authorize_url()` arms the OAuth nonce and returns the URL
   (`response_type=code`, `access_type=offline`, `account_type=service`);
   `_arc_fortnox_redirect_uri()` returns the parameter
@@ -122,4 +125,5 @@ trigger to manual.
   deferred INSERTs before partial unique index tests.
 - Open for the sandbox run: the rate limit default (25 calls / 5 s), the
   invoice list filter `externalinvoicereference1` and the fields it
-  returns, the organisation number format Fortnox stores and searches.
+  returns, the organisation number format Fortnox stores and searches,
+  and that a draft without `TermsOfPayment` gets the customer's terms.

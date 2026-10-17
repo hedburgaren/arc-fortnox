@@ -84,11 +84,12 @@ class SaleOrder(models.Model):
             invoice = {
                 "CustomerNumber": customer_number,
                 "Currency": self.currency_id.name,
-                "TermsOfPayment": self._arc_fortnox_payment_term_code(),
                 "ExternalInvoiceReference1": self.name,
                 "VATIncluded": self._arc_fortnox_vat_included(),
                 "InvoiceRows": self._arc_fortnox_invoice_rows(mapping),
             }
+            if self.company_id.sudo().arc_fortnox_terms_source == "order":
+                invoice["TermsOfPayment"] = self._arc_fortnox_payment_term_code()
             if self.client_order_ref:
                 # The customer's own order reference ("Er ordernummer").
                 invoice["YourOrderNumber"] = self.client_order_ref
@@ -411,6 +412,9 @@ class SaleOrder(models.Model):
                 ),
                 code="customer_currency_mismatch",
             )
+        if self.company_id.sudo().arc_fortnox_terms_source != "order":
+            # The customer's terms in Fortnox win; the draft carries none.
+            return
         fortnox_terms = str(customer.get("TermsOfPayment") or "").strip()
         order_terms = self._arc_fortnox_payment_term_code()
         if fortnox_terms and fortnox_terms != order_terms:

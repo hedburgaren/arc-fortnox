@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 18:00+0000\n"
-"PO-Revision-Date: 2026-10-17 18:00+0000\n"
+"POT-Creation-Date: 2026-10-17 18:07+0000\n"
+"PO-Revision-Date: 2026-10-17 18:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -595,6 +595,12 @@ msgid "Fortnox returned an unexpected response."
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_terms_source
+#: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
+msgid "Fortnox: Payment Terms From"
+msgstr ""
+
+#. module: arc_fortnox
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_company__arc_fortnox_send_article_numbers
 #: model:ir.model.fields,field_description:arc_fortnox.field_res_config_settings__arc_fortnox_send_article_numbers
 msgid "Fortnox: Send Article Numbers"
@@ -1070,6 +1076,11 @@ msgid "The Fortnox connection is not authorized."
 msgstr ""
 
 #. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_terms_source__customer
+msgid "The Fortnox customer's terms"
+msgstr ""
+
+#. module: arc_fortnox
 #. odoo-python
 #: code:addons/arc_fortnox/models/res_company.py:0
 msgid "The Fortnox max description length cannot be negative."
@@ -1166,6 +1177,21 @@ msgid ""
 "The customer number of this company in Fortnox. Set by the Fortnox bridge "
 "when it finds or creates the customer; an existing Fortnox customer can be "
 "linked by entering its number here."
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields.selection,name:arc_fortnox.selection__res_company__arc_fortnox_terms_source__order
+msgid "The order's payment term"
+msgstr ""
+
+#. module: arc_fortnox
+#: model:ir.model.fields,help:arc_fortnox.field_res_company__arc_fortnox_terms_source
+#: model:ir.model.fields,help:arc_fortnox.field_res_config_settings__arc_fortnox_terms_source
+msgid ""
+"The order's payment term: sent on every draft, and a Fortnox customer with "
+"other terms stops the push. The Fortnox customer's terms: the draft carries "
+"no terms, so Fortnox applies the customer's own; a customer created by this "
+"module gets the order's term."
 msgstr ""
 
 #. module: arc_fortnox
