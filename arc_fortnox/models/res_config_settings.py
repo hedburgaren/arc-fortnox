@@ -24,6 +24,11 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         string="Fortnox Trigger Domain",
     )
+    arc_fortnox_trigger_since = fields.Datetime(
+        related="company_id.arc_fortnox_trigger_since",
+        readonly=False,
+        string="Fortnox Trigger Since",
+    )
     arc_fortnox_throttle_calls = fields.Integer(
         related="company_id.arc_fortnox_throttle_calls",
         readonly=False,

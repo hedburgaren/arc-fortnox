@@ -33,6 +33,10 @@
                                 <label for="arc_fortnox_trigger_domain" class="col-lg-3 o_light_label"/>
                                 <field name="arc_fortnox_trigger_domain" class="w-50" placeholder="[('state', '=', 'sale')]"/>
                             </div>
+                            <div class="row" invisible="arc_fortnox_trigger_mode != 'domain'">
+                                <label for="arc_fortnox_trigger_since" class="col-lg-3 o_light_label"/>
+                                <field name="arc_fortnox_trigger_since"/>
+                            </div>
                         </setting>
                     </block>
                     <block title="API and Retries" name="arc_fortnox_api_container">

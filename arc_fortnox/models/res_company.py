@@ -56,6 +56,14 @@ class ResCompany(models.Model):
         "automatic, for example [('arc_order_stage', '=', 'delivered')]. "
         "Fields from other modules may be used here.",
     )
+    arc_fortnox_trigger_since = fields.Datetime(
+        string="Fortnox Trigger Since",
+        copy=False,
+        help="The automatic trigger only queues orders confirmed from this "
+        "moment on. Set when the automatic mode is switched on, so the "
+        "orders that existed before are never queued in bulk; move it back "
+        "deliberately to include older orders.",
+    )
     arc_fortnox_throttle_calls = fields.Integer(
         string="Fortnox Calls Per Period",
         default=25,
@@ -102,6 +110,19 @@ class ResCompany(models.Model):
         "configured uses ArticleNumber on the invoice row and the article "
         "must exist in Fortnox. Off by default: rows are sent as free text.",
     )
+
+    def write(self, vals):
+        mode = vals.get("arc_fortnox_trigger_mode")
+        if mode and "arc_fortnox_trigger_since" not in vals:
+            switching = self.filtered(
+                lambda company: company.arc_fortnox_trigger_mode != mode
+            )
+            if switching:
+                since = fields.Datetime.now() if mode == "domain" else False
+                super(ResCompany, switching).write(
+                    {"arc_fortnox_trigger_since": since}
+                )
+        return super().write(vals)
 
     @api.constrains("arc_fortnox_trigger_domain")
     def _check_arc_fortnox_trigger_domain(self):

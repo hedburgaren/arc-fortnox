@@ -609,6 +609,15 @@ class SaleOrder(models.Model):
                     company.name,
                 )
                 continue
+            since = company.arc_fortnox_trigger_since
+            if not since:
+                _logger.warning(
+                    "The Fortnox trigger for company %s has no start date and "
+                    "was skipped; switch the automatic mode off and on, or "
+                    "set the date, in Settings.",
+                    company.name,
+                )
+                continue
             orders = self.sudo().search(
                 expression.AND(
                     [
@@ -617,6 +626,7 @@ class SaleOrder(models.Model):
                             ("state", "=", "sale"),
                             ("arc_fortnox_invoice_number", "=", False),
                             ("company_id", "=", company.id),
+                            ("date_order", ">=", since),
                         ],
                     ]
                 )

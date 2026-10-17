@@ -1,5 +1,6 @@
 from odoo.addons.arc_fortnox.models.fortnox_client import FortnoxError
 from odoo.exceptions import ValidationError
+from datetime import timedelta
 from unittest.mock import patch
 
 from odoo.tools import mute_logger
@@ -220,3 +221,24 @@ class TestAutoEnqueueCron(ArcFortnoxF1Common):
         self._confirmed_order()
         self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
         self.assertFalse(self.queue.search([]))
+
+    def test_switching_on_sets_the_start_date(self):
+        self.assertTrue(self.company.arc_fortnox_trigger_since)
+        self.company.write({"arc_fortnox_trigger_mode": "manual"})
+        self.assertFalse(self.company.arc_fortnox_trigger_since)
+
+    def test_orders_confirmed_before_the_start_are_not_queued(self):
+        # Audit D-12: switching the trigger on never queues the backlog.
+        old = self._confirmed_order()
+        old.write({"date_order": self.company.arc_fortnox_trigger_since - timedelta(days=30)})
+        new = self._confirmed_order()
+        self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
+        self.assertFalse(self.queue.search([("sale_order_id", "=", old.id)]))
+        self.assertTrue(self.queue.search([("sale_order_id", "=", new.id)]))
+
+    def test_missing_start_date_queues_nothing(self):
+        self.company.write({"arc_fortnox_trigger_since": False})
+        order = self._confirmed_order()
+        with mute_logger("odoo.addons.arc_fortnox.models.sale_order"):
+            self.env["sale.order"]._arc_fortnox_cron_auto_enqueue()
+        self.assertFalse(self.queue.search([("sale_order_id", "=", order.id)]))
