@@ -1688,3 +1688,26 @@ msgstr "Fortnox-fälten är en kopia av Fortnox och kan inte ändras här."
 #: code:addons/arc_fortnox/models/arc_fortnox_record.py:0
 msgid "Link the company or the private person, not a contact person under a company."
 msgstr "Koppla företaget eller privatpersonen, inte en kontaktperson under ett företag."
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "VAT Types and Revenue Accounts"
+msgstr "Momstyper och intäktskonton"
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid ""
+"Which Fortnox VAT type and default revenue account each fiscal position "
+"sends. A product with its own Fortnox account overrides the default. Freight"
+" goes to the invoice's Freight field and is booked on the freight account "
+"set in Fortnox."
+msgstr ""
+"Vilken momstyp och vilket standardkonto för intäkter varje skatteposition "
+"skickar till Fortnox. En produkt med eget Fortnox-konto går före "
+"standardkontot. Frakt går till fakturans fraktfält och bokförs på "
+"fraktkontot som är inställt i Fortnox."
+
+#. module: arc_fortnox
+#: model_terms:ir.ui.view,arch_db:arc_fortnox.res_config_settings_view_form
+msgid "VAT Mappings"
+msgstr "Momsmappningar"

@@ -96,6 +96,11 @@
                                 <field name="arc_fortnox_invoice_template_private"/>
                             </div>
                         </setting>
+                        <setting id="arc_fortnox_accounts" string="VAT Types and Revenue Accounts" help="Which Fortnox VAT type and default revenue account each fiscal position sends. A product with its own Fortnox account overrides the default. Freight goes to the invoice's Freight field and is booked on the freight account set in Fortnox.">
+                            <div class="mt8">
+                                <button name="%(arc_fortnox.action_arc_fortnox_vat_mapping)d" string="VAT Mappings" type="action" class="btn-link" icon="oi-arrow-right"/>
+                            </div>
+                        </setting>
                     </block>
                 </app>
             </xpath>

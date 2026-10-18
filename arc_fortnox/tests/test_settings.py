@@ -101,3 +101,8 @@ class TestCredentialResolution(ArcFortnoxF1Common):
         with self.assertRaises(UserError) as context:
             self.company.arc_fortnox_client_credentials()
         self.assertIn(self.company.name, str(context.exception))
+
+    def test_settings_page_links_the_vat_mappings(self):
+        arch = self.env["res.config.settings"].get_view()["arch"]
+        action = self.env.ref("arc_fortnox.action_arc_fortnox_vat_mapping")
+        self.assertIn('name="%d"' % action.id, arch)

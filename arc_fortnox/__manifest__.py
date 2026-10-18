@@ -1,6 +1,6 @@
 {
     'name': 'Fortnox Bridge (Invoice Drafts)',
-    'version': '18.0.1.6.3',
+    'version': '18.0.1.6.4',
     'category': 'Sales/Sales',
     'summary': 'Push confirmed sales orders to Fortnox as invoice drafts.',
     'description': """
@@ -29,9 +29,10 @@ Client credentials are per company and are never shipped with the module.
         'security/arc_fortnox_security.xml',
         'security/ir.model.access.csv',
         'data/ir_cron.xml',
-        'views/res_config_settings_views.xml',
         'views/sale_order_views.xml',
         'views/arc_fortnox_views.xml',
+        # After arc_fortnox_views: the settings page links the VAT mapping action.
+        'views/res_config_settings_views.xml',
         'views/inherit_views.xml',
         'wizard/arc_fortnox_enqueue_confirm_views.xml',
         'wizard/arc_fortnox_record_import_views.xml',
